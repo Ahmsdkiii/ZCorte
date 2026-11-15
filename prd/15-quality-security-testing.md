@@ -1,0 +1,61 @@
+# Non-Functional, Keamanan, Pengujian
+
+> Bagian L, T, U.  
+> ← [Daftar dokumen](README.md)
+
+## L. Non-Functional Requirements
+
+| Kategori | ID | Persyaratan (terukur) | Cara verifikasi |
+|---|---|---|---|
+| Performance | NFR-01 | Lighthouse Mobile: Performance ≥ 85 untuk `/`, `/shop`, `/shop/[slug]`; LCP ≤ 2,5 dtk; CLS ≤ 0,1; TBT ≤ 200 ms. INP produksi ditargetkan ≤ 200 ms bila RUM tersedia | Lighthouse CI + RUM R2 |
+| Performance | NFR-02 | Setelah warm-up, p95 API baca < 300 ms dan tulis < 600 ms pada staging dengan seed 500 produk dan 20 concurrent users | k6/autocannon; konfigurasi dicatat |
+| Performance | NFR-03 | Gambar via `next/image` (WebP/AVIF, `sizes` benar), berat halaman awal ≤ 1,5 MB selain hero | DevTools / Lighthouse |
+| Security | NFR-04 | Semua OWASP Top 10 dasar tertangani (§T); `pnpm audit` tanpa *high/critical* yang belum dimitigasi | CI + risk review |
+| Maintainability | NFR-05 | ESLint 0 error/0 warning; Prettier lolos; JSCPD ≤ 3% dan CI gagal bila > 3%; TS `strict` + `noUncheckedIndexedAccess` | CI |
+| Maintainability | NFR-06 | Hindari fungsi > 40 baris dan file > 250 baris; pengecualian berdasarkan kohesi dan dicatat saat review. Tidak ada explicit `any` tanpa alasan | ESLint + review |
+| Scalability | NFR-07 | Stateless; session & rate limit tidak disimpan di memori proses jika > 1 instance (tabel DB sebagai penyimpan awal) | Review arsitektur |
+| Reliability | NFR-08 | Webhook pembayaran & Telegram idempoten; kegagalan notifikasi tidak menggagalkan transaksi; backup DB harian di lingkungan produksi | Uji integrasi |
+| Accessibility | NFR-09 | Lighthouse A11y ≥ 95; axe-core 0 pelanggaran *serious/critical* pada alur utama | Playwright + axe |
+| SEO | NFR-10 | `generateMetadata` per halaman, canonical, OG, `sitemap.xml` dinamis dari DB, `robots.txt`, JSON-LD Product/Breadcrumb/Organization | Pemeriksaan otomatis |
+| Responsive | NFR-11 | Alur utama lulus pada 320, 390, 768, 1024, 1440 px | Playwright viewport |
+| Data privacy | NFR-12 | Data minimal; log AI tidak menyimpan data pribadi (PII di-mask); personalisasi opt-in; penghapusan data atas permintaan | Review + uji |
+| Observability | NFR-13 | Log terstruktur JSON (`level`, `requestId`, `route`, `durationMs`) tanpa rahasia; endpoint `/api/health` (DB ok) | Uji unit/integrasi |
+| Cost | NFR-14 | R1 membatasi panggilan AI harian dan ≤ 1.000 token output/jawaban; fallback ke scripted/FAQ saat batas tercapai | Uji integrasi |
+
+## T. Security Requirements
+
+| ID | Area | Persyaratan |
+|---|---|---|
+| SEC-01 | Autentikasi | Password di-hash (argon2id/bcrypt cost ≥ 12); cookie sesi `HttpOnly; Secure; SameSite=Lax`; throttling login |
+| SEC-02 | Otorisasi | Pemeriksaan peran & kepemilikan di **service layer** pada setiap operasi; pengujian IDOR untuk pesanan, alamat, wishlist |
+| SEC-03 | Validasi | Zod di setiap Server Action/Route Handler; tipe & rentang; tolak properti tak dikenal |
+| SEC-04 | Integritas transaksi | Total dihitung ulang server; harga dari DB; stok atomik; `idempotencyKey` |
+| SEC-05 | Pembayaran | R0 hanya mengizinkan simulator pada environment demo; R1 memverifikasi signature provider dan jumlah; tidak menyimpan data kartu |
+| SEC-06 | Secret | Semua kunci (DB, AI, Telegram, gateway, Cloudinary, `AUTH_SECRET`, `CRON_SECRET`) hanya di env server; validasi env saat boot (`config/env.ts`); tidak ada prefiks `NEXT_PUBLIC_` untuk rahasia; `.env` di `.gitignore`; sediakan `.env.example` tanpa nilai |
+| SEC-07 | Telegram | Simulator dijaga sesi Owner; bot R1 memakai secret header, link allowlist, chat private, rate limit, audit, dan minimisasi data (§R) |
+| SEC-08 | AI | Tools read-only, `userId` dari sesi, kuota & rate limit, sanitasi input, data DB sebagai data (§S.4) |
+| SEC-09 | Web | CSP ketat (nonce), `X-Content-Type-Options`, `Referrer-Policy`, `frame-ancestors 'none'`, HSTS di produksi; Server Actions Next.js memiliki proteksi origin bawaan — jangan dinonaktifkan |
+| SEC-10 | XSS/Injeksi | React meng-escape; hindari `dangerouslySetInnerHTML` kecuali JSON-LD yang di-serialisasi aman (escape `<`); Prisma parameterized; `ILIKE` memakai parameter |
+| SEC-11 | Upload | Validasi MIME & ukuran, hanya owner, nama file dibuat server, tidak dieksekusi |
+| SEC-12 | Rate limiting | Login, search, AI, Telegram, checkout; penyimpanan di DB/edge store |
+| SEC-13 | Data pribadi | Minimalkan; pesan Telegram & log tanpa PII berlebih; hapus data atas permintaan |
+| SEC-14 | Dependensi | `pnpm audit` di CI; versi dikunci (`pnpm-lock.yaml`) |
+| SEC-15 | Audit | Aksi owner & Telegram tercatat, tidak dapat diubah dari UI |
+
+## U. Testing Strategy
+
+| ID | Jenis | Cakupan | Alat | Target |
+|---|---|---|---|---|
+| U.1 | Unit | `productRules`, harga/total, state machine pesanan, `OutfitService` (skor), `SizeService`, formatter Telegram, validator Zod, `dedupeKey` | Vitest | Cakupan ≥ 80% pada `services/` & `models/domain` |
+| U.2 | Integrasi | Service + PostgreSQL uji: `placeOrder` atomik, balapan stok, reserve/release satu kali, adapter pembayaran idempoten, laporan | Vitest | Semua alur transaksi |
+| U.2a | Sumber data produk | Matikan/hapus file mock setelah bootstrap; ubah produk melalui DB/Admin lalu verifikasi Storefront, Assistant, Cart, dan Checkout membaca perubahan yang sama | Vitest + Playwright | 0 import runtime dari mock/seed; DB satu-satunya sumber |
+| U.3 | E2E | Browse → PDP → bag → login → checkout → bayar simulasi → konfirmasi; Owner memproses/mengirim; Customer melihat tracking | Playwright | Alur Must R0 hijau di CI |
+| U.4 | Fungsional | Matriks FR → kasus uji; setiap AC menjadi minimal satu uji | Playwright/Vitest | Traceability FR↔uji |
+| U.5 | Responsif | Viewport 320/390/768/1024/1440; tanpa scroll horizontal; menu mobile, drawer, panel chat | Playwright | Lulus pada 5 viewport |
+| U.6 | Aksesibilitas | axe-core pada halaman kunci; navigasi keyboard dialog | Playwright + axe | 0 serious/critical |
+| U.7 | Validasi AI | Set ≥ 40 prompt (§S.7), stub model + uji manual model nyata | Vitest | Kriteria §S.7 |
+| U.8 | Otorisasi Telegram | R0: Visitor/Customer ditolak simulator. R1: secret salah, user tak dikenal, link dicabut, grup, Owner sah, perintah tak dikenal | Vitest dengan fixture | 100% lulus |
+| U.9 | Akurasi laporan | Fixture pesanan lintas status/zona waktu (23:59 vs 00:01 WIB, batas pekan/bulan) → `ReportService` = angka dashboard = angka Telegram = hitungan SQL manual | Vitest | Selisih 0 |
+| U.10 | Adapter/webhook | R0: outcome simulasi dan environment guard. R1: payload valid/ganda/signature salah/jumlah beda untuk payment/Telegram | Vitest | Sesuai FR-008, FR-041 |
+| U.11 | Build & kualitas kode | `pnpm lint` (0 warning), `format:check`, `typecheck`, `jscpd`, `knip`, `build` | CI | Semua hijau sebelum merge |
+| U.12 | Performa | Lighthouse CI pada 3 halaman | Lighthouse CI | NFR-01 |

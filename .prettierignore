@@ -1,0 +1,8 @@
+.next/
+node_modules/
+desain/
+asset/
+*.tsbuildinfo
+next-env.d.ts
+APEX_Web-direction.pdf
+pnpm-lock.yaml

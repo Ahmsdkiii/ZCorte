@@ -1,0 +1,185 @@
+# Functional Requirements — Customer
+
+> Bagian H.1: FR-001 sampai FR-013.  
+> ← [Daftar dokumen](README.md)
+
+## H. Functional Requirements
+
+> Format ringkas per fitur. **Validation** dan **Acceptance Criteria (AC)** bersifat dapat diuji. Teks UI mengikuti prototype (verbatim) kecuali D-02/D-03 diputuskan lain.
+
+### H.1 Customer
+
+#### FR-001 — Homepage `[P+]` · Must
+
+| Field | Isi |
+|---|---|
+| Description | Halaman utama dengan hero, premise, pinned story, kartu koleksi, katalog featured, closing — sesuai 6 section prototype |
+| Objective | Memperkenalkan brand & mengarahkan ke koleksi/katalog |
+| User role | Visitor, Customer, Owner |
+| Preconditions | Minimal 1 koleksi aktif; produk `featured=true` tersedia (jika tidak, section katalog menampilkan empty state) |
+| Main flow | 1) Server Component mengambil koleksi, produk featured, story steps dari DB. 2) Render section berurutan. 3) CTA "Explore"/"Shop" menuju `#brand`, `#collections`, `/shop` |
+| Alternative flow | A1: data story kosong → section pinned story disembunyikan. A2: gambar gagal dimuat → placeholder `surface-raised` |
+| Validation | Hanya produk `ACTIVE` ditampilkan; jumlah featured maks 6 |
+| Expected result | Halaman render tanpa layout shift; tautan valid |
+| AC | (a) Semua section prototype hadir; (b) LCP gambar hero ≤ 2,5 dtk pada profil Lighthouse Mobile; (c) hanya ada satu `<h1>`; (d) JSON-LD Organization & WebSite valid |
+
+#### FR-002 — Halaman Koleksi `[P+]` · Must
+
+| Field | Isi |
+|---|---|
+| Description | Satu route dinamis `/collections/[slug]` menggantikan 3 halaman duplikat; menampilkan hero, premise, story, "A Closer Look", katalog koleksi, sign-off |
+| Objective | Menghilangkan duplikasi kode (G8) dan memungkinkan koleksi baru tanpa deploy |
+| User role | Visitor, Customer, Owner |
+| Preconditions | Koleksi dengan `slug` ada dan `isActive` |
+| Main flow | Ambil koleksi + story + produk → render `CollectionView` |
+| Alternative flow | Slug tidak ada → `notFound()` (404 bermerek) |
+| Validation | `slug` sesuai `^[a-z0-9-]+$` |
+| Expected result | Tiga koleksi awal tampil identik secara visual dengan prototype |
+| AC | (a) Nav Header/Footer tetap menuju `/collections/tactix`, `/apextive`, `/outdoor` (slug dipertahankan); (b) `generateStaticParams` + ISR; (c) JSCPD tidak menandai halaman koleksi |
+
+#### FR-003 — Katalog, Filter, Sort `[P+]` · Must
+
+| Field | Isi |
+|---|---|
+| Description | `/shop` dengan filter koleksi, sort, dan tambahan filter kategori, rentang harga, ukuran, warna |
+| Objective | Menemukan produk dengan cepat |
+| User role | Visitor, Customer, Owner |
+| Preconditions | — |
+| Main flow | Pengguna memilih filter → URL search params diperbarui (`router.replace`, tanpa scroll) → Server Component me-render ulang hasil dari DB |
+| Alternative flow | A1: hasil kosong → empty state + "CLEAR FILTER". A2: parameter tidak valid → diabaikan, dipakai default |
+| Validation | `sort ∈ {featured, price-asc, price-desc}`; `minPrice ≤ maxPrice`; semua param di-parse Zod |
+| Expected result | URL dapat dibagikan dan mereproduksi hasil yang sama |
+| AC | (a) Filter/sort prototype tetap bekerja; (b) penghitung "SHOWING n …" benar; (c) paginasi/“load more” 12 produk per halaman; (d) filter state hanya di URL (tanpa duplikasi di Zustand) |
+
+#### FR-004 — Search Produk `[R]` ⚙️ · Must
+
+| Field | Isi |
+|---|---|
+| Description | Kolom pencarian di header; mencari nama, deskripsi, kategori, warna |
+| Objective | Mengisi celah navigasi (prototype tanpa search) |
+| User role | Visitor, Customer, Owner |
+| Preconditions | — |
+| Main flow | Input (debounce 300 ms) → `GET /api/products/search?q=` → daftar saran; Enter → `/shop?q=` |
+| Alternative flow | A1: tanpa hasil → saran koleksi populer. A2: `q` < 2 karakter → tidak mencari |
+| Validation | `q` trim, 2–60 karakter, di-escape; rate limit 30 req/menit/IP |
+| Expected result | Hasil relevan, diurutkan: kecocokan nama > kategori > deskripsi |
+| AC | (a) Pencarian "shirt" mengembalikan Utility Overshirt & Movement Tee pada seed; (b) p95 respons < 300 ms pada 500 produk; (c) query tersimpan sebagai `ProductEvent(SEARCH)` untuk FR-035 hanya jika user login & consent |
+| Implementasi | PostgreSQL `ILIKE` + indeks `pg_trgm`; tidak memakai layanan search eksternal (tidak dibutuhkan pada skala ini) |
+
+#### FR-005 — Detail Produk `[P+]` · Must
+
+| Field | Isi |
+|---|---|
+| Description | Galeri (front/back/context, fullscreen), pilih warna/ukuran, quantity, Add to Bag, akordeon, badge stok, dan produk terkait. Wishlist, Smart Size, Complete the Look, serta review ditampilkan hanya jika FR terkait masuk release |
+| Objective | Memberi keputusan beli yang yakin |
+| User role | Visitor, Customer, Owner |
+| Preconditions | Produk `ACTIVE` |
+| Main flow | 1) Pilih warna → galeri & ukuran tersedia berubah (`getAvailableSizes`). 2) Pilih ukuran (kecuali one-size). 3) Atur qty (1–10, ≤ stok). 4) Add to Bag → drawer terbuka |
+| Alternative flow | A1: ukuran belum dipilih → pesan galat inline & fokus ke selector. A2: varian stok 0 → ukuran dinonaktifkan + label "Sold out". A3: slug tidak ada → 404 |
+| Validation | `quantity` integer 1–10 dan ≤ stok varian; ukuran ∈ ukuran produk |
+| Expected result | Item masuk bag dengan id `productId:colorId:size` (aturan prototype dipertahankan) |
+| AC | (a) JSON-LD Product berisi harga & ketersediaan dari DB; (b) stok varian 0 tidak dapat ditambahkan; (c) galeri dapat dinavigasi keyboard (←/→/Esc); (d) tidak ada label "CONCEPT" |
+
+#### FR-006 — Bag (Cart Drawer) & Quick Add `[P+]` · Must
+
+| Field | Isi |
+|---|---|
+| Description | Drawer "YOUR BAG", ubah qty, hapus, subtotal, empty state; Quick Add dari kartu produk |
+| Objective | Alur tambah-ke-bag cepat dan konsisten |
+| User role | Visitor, Customer, Owner |
+| Preconditions | — |
+| Main flow | Visitor: bag di `localStorage` (kunci `{brand}_cart_v1`) — hanya menyimpan `variantId` + `quantity`, **bukan salinan produk**. Customer: bag di DB; saat login/checkout, bag lokal digabung (jumlah dijumlahkan, dibatasi stok) |
+| Alternative flow | A1: harga/stok berubah sejak ditambahkan → bag direvalidasi ke server dan item ditandai "harga diperbarui"/"stok terbatas". A2: varian dinonaktifkan → item ditandai tidak tersedia |
+| Validation | qty 1–10; maksimum 20 baris |
+| Expected result | Subtotal selalu dihitung dari harga DB terkini |
+| AC | (a) Perilaku drawer dan Quick Add sama dengan prototype; (b) refresh halaman mempertahankan bag; (c) tidak ada snapshot harga di client yang dipercaya server |
+
+#### FR-007 — Checkout `[P+]` · Must
+
+| Field | Isi |
+|---|---|
+| Description | Form kontak, alamat, metode pengiriman (`standard` gratis / `express` Rp45.000 — nilai prototype, tarif tetap dikonfigurasi Owner lewat `ShippingProvider`; pengiriman fisik dilakukan toko), metode pembayaran, langkah **"Periksa alamat"**, ringkasan |
+| Objective | Mengubah bag menjadi pesanan yang valid & terbayar, dengan identitas pembeli jelas (mengurangi spam dan salah alamat) |
+| User role | **Customer** (login wajib) |
+| Preconditions | Pengguna login; bag tidak kosong; semua item tersedia |
+| Main flow | 1) Visitor menekan Checkout → diarahkan ke login/daftar, lalu kembali ke checkout dengan bag terbawa (`mergeGuestCart`). 2) Pilih alamat tersimpan atau isi baru. 3) Pilih pengiriman & pembayaran. 4) Layar **Periksa alamat**: ringkasan penerima, alamat, telepon; pelanggan mengonfirmasi. 5) Submit → Server Action `placeOrder`: validasi Zod → transaksi DB (cek & kurangi stok, buat Order+OrderItem snapshot, Payment `PENDING`) → inisiasi pembayaran. 6) Redirect ke pembayaran/konfirmasi |
+| Alternative flow | A1: stok kurang saat submit → rollback, pesan per item, bag diperbarui. A2: kode promo tidak valid → galat di kolom promo. A3: gateway gagal → pesanan `PENDING_PAYMENT` tetap ada, tombol "Bayar ulang". A4: sudah ada 3 pesanan `PENDING_PAYMENT` → ditolak dengan pesan "selesaikan atau batalkan pesanan sebelumnya". A5: sesi habis saat submit → login ulang, form dipertahankan |
+| Validation | email RFC-valid; telepon `^(\+62\|62\|0)8[0-9]{8,12}$`; nama 1–60; alamat 5–200; kota & provinsi wajib; kode pos `^\d{5}$`; catatan ≤ 250. **Server menghitung ulang total; nilai dari client diabaikan** |
+| Expected result | Order dengan nomor unik server-side (`{PREFIX}-YYMM-NNNN`), stok dicadangkan melalui `InventoryMovement(RESERVE)`, lalu dilepas saat pesanan dibatalkan/kedaluwarsa |
+| AC | (a) `idempotencyKey` sama untuk user yang sama tidak membuat dua pesanan; (b) dua pembeli berebut stok terakhir → tepat satu berhasil; (c) pengguna tanpa login tidak dapat memanggil `placeOrder` (401); (d) maksimum 3 pesanan `PENDING_PAYMENT` per akun; (e) setiap reserve/release tercatat; (f) tanpa opsi COD |
+
+#### FR-008 — Pembayaran `[P+]` · Must
+
+| Field | Isi |
+|---|---|
+| Description | Pilihan Virtual Account, QRIS, dan Kartu dari UI prototype melalui antarmuka `PaymentGateway`. **R0:** adapter simulasi (Bayar/Gagal). **R1:** adapter sandbox dipilih setelah verifikasi dokumentasi provider terbaru |
+| Objective | Pembayaran dengan verifikasi aman; status pembayaran konsisten di seluruh sistem |
+| User role | Customer |
+| Preconditions | Order `PENDING_PAYMENT` |
+| Main flow | 1) `PaymentService` memilih adapter berdasarkan env. 2) R0 membuka halaman simulasi; R1 membuat charge sandbox. 3) Adapter simulasi atau webhook terverifikasi memanggil `PaymentService.markPaid`. 4) Payment dan Order menjadi `PAID`, lalu event `ORDER_PAID` dicatat |
+| Alternative flow | A1: kedaluwarsa (24 jam) → Payment/Order `EXPIRED`, stok dilepas. A2: callback ganda → idempoten. A3: pembayaran gagal → pesanan tetap `PENDING_PAYMENT`, tombol "Bayar ulang". A4: jumlah tidak cocok → Payment `NEEDS_ATTENTION`; order tidak menjadi `PAID` |
+| Validation | R1 mengikuti skema signature resmi provider yang dipilih; jumlah dibayar harus sama dengan `Order.total`; signature dibandingkan konstan-waktu. Request dengan signature salah ditolak tanpa mengubah data |
+| Expected result | Status pembayaran konsisten antara DB, UI, dan Telegram |
+| AC | (a) Hanya adapter simulasi di environment demo yang boleh menandai pembayaran tanpa webhook; (b) callback salah tidak diproses dan dicatat; (c) jumlah tidak cocok → `NEEDS_ATTENTION`; (d) data kartu tidak menyentuh server aplikasi; (e) total selalu dihitung server |
+| Catatan | Pemilihan vendor sandbox/produksi bukan bagian R0 dan harus diverifikasi terhadap dokumentasi, biaya, serta persyaratan akun terbaru |
+
+#### FR-009 — Konfirmasi, Pelacakan & Perubahan Alamat `[R]` · Must
+
+| Field | Isi |
+|---|---|
+| Description | Layar konfirmasi (dari prototype) + `/account/orders` (daftar) dan `/account/orders/[orderNumber]` (detail) |
+| Objective | Transparansi status pesanan dan kesempatan memperbaiki alamat yang salah |
+| User role | Customer |
+| Preconditions | Pesanan milik pengguna login |
+| Main flow | Tampilkan nomor, item, total, pengiriman, timeline (`PENDING_PAYMENT → PAID → PROCESSING → SHIPPED → COMPLETED`), nama kurir + nomor resi bila ada (tombol "Lacak di situs kurir" berupa tautan ke situs resmi kurir, tanpa API). Selama status `PENDING_PAYMENT` atau `PAID`, tombol "Ubah alamat" tersedia |
+| Alternative flow | A1: pesanan milik user lain → 404 (tidak membocorkan keberadaan). A2: status sudah `PROCESSING`+ → perubahan alamat hanya lewat Owner (kontak pelanggan terlihat di dashboard Owner) |
+| Validation | Alamat baru memakai skema Zod yang sama dengan checkout; perubahan dicatat di `OrderStatusHistory`/audit |
+| Expected result | Hanya pemilik pesanan yang dapat melihat dan mengubah alamat |
+| AC | (a) Customer A tidak dapat membuka pesanan Customer B (uji otorisasi); (b) timeline sesuai riwayat; (c) ubah alamat ditolak setelah `PROCESSING` |
+
+#### FR-010 — Autentikasi & Sesi `[R]` · Must
+
+| Field | Isi |
+|---|---|
+| Description | Registrasi/login email+password (Credentials) dan opsional Google OAuth; sesi aman; RBAC dua peran (`CUSTOMER`, `OWNER`) |
+| Objective | Akun pembeli untuk checkout, riwayat, wishlist; akses Owner ke `/admin` |
+| User role | Visitor → Customer; Owner |
+| Preconditions | — |
+| Main flow | Registrasi → hash password (argon2id/bcrypt) → login → sesi → redirect (kembali ke halaman asal, mis. checkout) |
+| Alternative flow | A1: email terdaftar → pesan generik. A2: 5 gagal login/15 menit → throttle. A3: lupa password — **R2 sebelum go-live**, tidak dibutuhkan untuk akun seed R0 |
+| Validation | Password ≥ 10 karakter; email unik (case-insensitive); captcha ringan (mis. Turnstile) pada registrasi bila tersedia |
+| Expected result | Cookie `HttpOnly`, `SameSite=Lax`, `Secure` di produksi |
+| AC | (a) `/admin/*` mengembalikan 403/redirect untuk non-Owner; (b) password tidak pernah ada di log/respons; (c) Owner dibuat lewat seed, registrasi publik selalu `CUSTOMER`; (d) rate limit pada login/registrasi |
+
+#### FR-011 — Profil & Alamat `[R]` · Should
+
+| Field | Isi |
+|---|---|
+| Description | Ubah nama/telepon, kelola alamat (maks 5, satu default) |
+| Objective | Mempercepat checkout berikutnya |
+| User role | Customer |
+| Main flow | CRUD alamat dengan skema Zod yang sama dengan form checkout |
+| Alternative flow | Hapus alamat default → default dialihkan ke alamat terbaru |
+| Validation | Sama dengan FR-007 |
+| AC | Alamat milik user lain tidak dapat dibaca/diubah (uji otorisasi) |
+
+#### FR-012 — Wishlist `[R]` · Should
+
+| Field | Isi |
+|---|---|
+| Description | Simpan produk (level produk, bukan varian) |
+| Objective | Menyimpan minat; sinyal untuk FR-035 |
+| User role | Customer |
+| Main flow | Ikon hati di kartu & PDP → toggle (optimistic UI) → halaman `/account/wishlist` |
+| Alternative flow | Visitor menekan hati → diarahkan login lalu kembali ke produk |
+| Validation | Unik (userId, productId) |
+| AC | Toggle idempoten; produk non-aktif tampil "Unavailable" |
+
+#### FR-013 — Review & Rating `[R]` · Could
+
+| Field | Isi |
+|---|---|
+| Description | Rating 1–5 + komentar; hanya pembeli dengan pesanan `COMPLETED` untuk produk tersebut |
+| Objective | Bukti sosial; menghindari ulasan palsu |
+| Validation | Satu review/produk/user; komentar ≤ 500 karakter, di-sanitasi |
+| AC | User tanpa pembelian terverifikasi ditolak; rata-rata rating dihitung dari DB |
