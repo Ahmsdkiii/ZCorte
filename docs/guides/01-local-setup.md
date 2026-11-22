@@ -16,7 +16,7 @@ Panduan ini memastikan ketiga laptop anggota tim memakai environment yang konsis
    Jangan memakai nama folder dengan aksen `é` (`ZCorté`), karena beberapa versi Prisma CLI dan Docker volume memiliki kendala dengan karakter non-ASCII.
 
    ```bash
-   git clone https://github.com/Ahmsdkiii/ZCort-.git zcorte
+   git clone https://github.com/Ahmsdkiii/ZCorte.git zcorte
    cd zcorte
    ```
 

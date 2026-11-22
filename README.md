@@ -9,7 +9,7 @@ Target saat ini adalah **Release 0 (R0 — Competition MVP)**: core e-commerce b
 > **Catatan nama folder:** Clone ke folder ASCII `zcorte` (tanpa huruf `é`) agar Prisma CLI, Docker volume, dan path tool lintas OS tidak bermasalah.
 
 ```bash
-git clone https://github.com/Ahmsdkiii/ZCort-.git zcorte
+git clone https://github.com/Ahmsdkiii/ZCorte.git zcorte
 cd zcorte
 corepack enable && pnpm install
 cp .env.example .env
