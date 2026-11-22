@@ -2,11 +2,14 @@
 
 Dokumen ini mengatur cara kerja harian 3 developer ZCorté di repository ini agar pekerjaan paralel tidak saling menimpa atau menimbulkan konflik. Untuk aturan arsitektur dan coding, ikuti [AGENTS.md](AGENTS.md).
 
-## 1. Alur Kerja Git & Branch
+## 1. Alur Kerja Git & Strategi Branch (Develop-First)
 
-- **Branch utama:** `main` (saat ini masih bernama `master` sampai diubah di GitHub Settings; CI berjalan otomatis untuk `main` dan `master`). Branch utama **wajib selalu hijau** dan dapat didemokan kapan saja.
-- **Dilarang push langsung** ke `main`/`master` setelah branch protection aktif. Semua perubahan masuk melalui Pull Request.
-- **Konvensi nama branch:**
+Repository ini menerapkan alur **Develop-First** untuk menjaga branch produksi tetap stabil:
+
+- **Branch produksi / rilis:** `main` (atau `master`). Branch ini **wajib selalu hijau, stabil, dan siap didemokan kapan saja**. Dilarang push langsung.
+- **Branch integrasi harian:** `develop`. **Semua Pull Request fitur (`feat/*`), perbaikan (`fix/*`), dokumentasi (`docs/*`), dan kontrak (`contract/*`) WAJIB ditargetkan ke branch `develop`**.
+- **Rilis ke `main`/`master`:** Hanya dilakukan saat satu fase (misalnya Foundation P1 atau Release R0) telah teruji dan selesai secara menyeluruh di `develop` melalui PR khusus rilis.
+- **Konvensi nama branch kerja:**
   - Fitur: `feat/fr-007-place-order` atau `feat/<feature-slug>`
   - Bugfix: `fix/<deskripsi-singkat>`
   - Dokumentasi: `docs/<deskripsi-singkat>`
@@ -29,7 +32,8 @@ Gunakan format `<type>(<scope>): <ringkasan> [FR-xxx]`:
 - **Ukuran PR:** Fokus satu tujuan atau satu fitur. Usahakan diff di bawah ~400 baris di luar file lockfile atau SQL migration ter-generate.
 - **Template PR wajib diisi:** Tautkan FR terkait, slug di `docs/features/<slug>.md`, dan hasil cek lokal.
 - **Reviewer silang:** Minimal **1 approval dari developer di lane lain** (lihat matriks di [docs/team/ownership.md](docs/team/ownership.md)). Target waktu respons review maksimal 24 jam.
-- **Strategi Merge:** Gunakan **Squash and merge** dan hapus branch setelah ter-merge. Jika ada konflik saat akan merge, lakukan `git fetch origin && git rebase origin/master` (atau `origin/main`) di branch Anda, jalankan ulang cek, lalu push `--force-with-lease`.
+- **Target Branch PR:** Selalu arahkan base branch PR ke **`develop`** (bukan ke `master`/`main`).
+- **Strategi Merge:** Gunakan **Squash and merge** dan hapus branch setelah ter-merge. Jika ada konflik saat akan merge, lakukan `git fetch origin && git rebase origin/develop` di branch Anda, jalankan ulang cek, lalu push `--force-with-lease`.
 
 ## 4. Aturan Kontrak Bersama (`contract` PR)
 
@@ -64,7 +68,8 @@ File-file berikut adalah **kontrak bersama** yang memengaruhi seluruh tim:
 
 ## 7. Checklist Sebelum Membuka PR
 
-- [ ] Berada di branch fitur/fix/docs tersendiri, bukan di branch utama.
+- [ ] Berada di branch fitur/fix/docs tersendiri (dibuat dari `develop`), bukan di `develop` atau `main`/`master`.
+- [ ] Base branch PR di GitHub diarahkan ke **`develop`**.
 - [ ] Dokumen fitur di `docs/features/<slug>.md` dibuat/diperbarui dan terdaftar di [docs/features/README.md](docs/features/README.md).
 - [ ] `pnpm check` (`lint` + `format:check` + `typecheck`) dan `pnpm build` hijau di lokal.
 - [ ] Test yang relevan sudah ditambahkan dan dijalankan (tidak ada `any`, tidak ada mock runtime untuk data inti).
