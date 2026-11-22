@@ -1,0 +1,47 @@
+name: Bug Report
+description: Laporkan bug yang ditemukan saat development, testing, atau demo
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Deskripsi Singkat
+      description: Jelaskan masalah yang terjadi secara ringkas dan jelas.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Langkah Reproduksi
+      placeholder: |
+        1. Buka halaman ...
+        2. Klik tombol ...
+        3. Lihat error ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected_actual
+    attributes:
+      label: Perilaku Seharusnya vs Kondisi Aktual
+      placeholder: |
+        Seharusnya: ...
+        Aktual: ...
+    validations:
+      required: true
+  - type: dropdown
+    id: lane
+    attributes:
+      label: Area / Lane Terdampak
+      options:
+        - Lane A — Storefront & Akun
+        - Lane B — Order, Payment & Owner
+        - Lane C — Inovasi, EKRAF & QA
+        - Foundation / Infra / CI
+    validations:
+      required: true
+  - type: input
+    id: viewport_env
+    attributes:
+      label: Viewport / Environment (opsional)
+      placeholder: "Mobile 390px, Chrome, Commit abc123"

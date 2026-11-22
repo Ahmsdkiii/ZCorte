@@ -19,5 +19,7 @@ APEX_Web-direction.pdf
 .DS_Store
 Thumbs.db
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
 *.sw?

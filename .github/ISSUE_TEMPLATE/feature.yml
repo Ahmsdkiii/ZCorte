@@ -1,0 +1,54 @@
+name: Feature Implementation (FR)
+description: Task implementasi fitur berdasarkan PRD dan registry feature doc ZCorté
+title: "[FR-xxx] "
+labels: ["R0"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Pastikan slug fitur merujuk pada daftar resmi di `docs/features/README.md` dan kepemilikan lane di `docs/team/ownership.md`.
+  - type: input
+    id: fr_id
+    attributes:
+      label: Referensi FR / PRD
+      description: Cantumkan ID FR dan dokumen PRD terkait.
+      placeholder: "FR-007 (prd/03-fr-customer.md)"
+    validations:
+      required: true
+  - type: input
+    id: feature_slug
+    attributes:
+      label: Feature Doc Slug
+      description: Nama file di `docs/features/<slug>.md` dari registry resmi.
+      placeholder: "checkout-place-order"
+    validations:
+      required: true
+  - type: dropdown
+    id: lane
+    attributes:
+      label: Lane Pemilik
+      options:
+        - Foundation (P1)
+        - Lane A — Storefront & Akun
+        - Lane B — Order, Payment & Owner
+        - Lane C — Inovasi, EKRAF & QA
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria & Scope
+      description: Ringkas AC kunci dan edge case dari PRD yang harus diuji.
+      placeholder: |
+        - [ ] Happy path ...
+        - [ ] Negative/authorization test ...
+    validations:
+      required: true
+  - type: checkboxes
+    id: shared_contracts
+    attributes:
+      label: Kontrak Bersama yang Disentuh
+      options:
+        - label: Memerlukan perubahan `prisma/schema.prisma` (butuh koordinasi migration)
+        - label: Memerlukan perubahan `ActionResult`, `ErrorCode`, atau `AuthContext`
+        - label: Bergantung pada task lain (sebutkan di komentar)

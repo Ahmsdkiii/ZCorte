@@ -14,11 +14,15 @@ export const COLLECTION_LABELS: Record<ProductCollection, string> = {
 };
 
 export function getProductColor(product: Product, colorId?: ProductColorId): ProductColorVariant {
+  const firstColor = product.colors[0];
+  if (!firstColor) {
+    throw new Error(`Product "${product.slug}" must have at least one color variant.`);
+  }
   if (!colorId) {
-    return product.colors[0];
+    return firstColor;
   }
   const match = product.colors.find((c) => c.id === colorId);
-  return match ?? product.colors[0];
+  return match ?? firstColor;
 }
 
 export function getAvailableSizes(product: Product, colorId?: ProductColorId): ProductSize[] {

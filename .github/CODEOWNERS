@@ -1,0 +1,79 @@
+# ZCorté — Code Owners (3-Lane Parallel Workflow)
+#
+# Cara mengaktifkan saat Kick-Off (D-08 di prd/01-overview.md):
+# 1. Ganti @github-dev-a, @github-dev-b, dan @github-dev-c dengan username GitHub asli.
+# 2. Hapus tanda '#' di awal baris aturan di bawah ini agar GitHub otomatis
+#    menunjuk reviewer saat PR menyentuh kontrak bersama atau folder lane lain.
+#
+# Catatan: Baris sengaja diberi komentar sementara agar GitHub tidak memunculkan
+# peringatan invalid username sebelum ketiga akun collaborator terpasang.
+
+# ==============================================================================
+# Kontrak Bersama (WAJIB PR berlabel `contract` + koordinasi lintas lane)
+# ==============================================================================
+# /prisma/schema.prisma              @github-dev-b @github-dev-a @github-dev-c
+# /src/server/auth/                  @github-dev-a @github-dev-b
+# /src/proxy.ts                      @github-dev-a @github-dev-b
+# /src/lib/action-result.ts          @github-dev-a @github-dev-b
+# /src/server/lib/errors.ts          @github-dev-a @github-dev-b
+# /src/config/env.ts                 @github-dev-a @github-dev-b
+# /.env.example                      @github-dev-a @github-dev-b
+# /src/app/globals.css               @github-dev-a
+# /src/models/types/product.ts       @github-dev-a @github-dev-b @github-dev-c
+# /src/models/types/cart.ts          @github-dev-a @github-dev-b
+
+# ==============================================================================
+# Lane A — Storefront, Katalog, Bag, Auth & Akun (Dev A)
+# ==============================================================================
+# /src/app/(auth)/                   @github-dev-a
+# /src/app/(account)/                @github-dev-a
+# /src/app/(storefront)/             @github-dev-a
+# /src/app/api/products/             @github-dev-a
+# /src/app/api/cart/                 @github-dev-a
+# /src/components/atoms/             @github-dev-a
+# /src/components/molecules/         @github-dev-a
+# /src/components/ui/                @github-dev-a
+# /src/server/services/product.service.ts   @github-dev-a
+# /src/server/services/cart.service.ts      @github-dev-a
+# /src/server/services/wishlist.service.ts  @github-dev-a
+# /src/server/services/address.service.ts   @github-dev-a
+# /src/server/services/auth.service.ts      @github-dev-a
+
+# ==============================================================================
+# Lane B — Checkout, Order, Payment & Owner Ops (Dev B)
+# ==============================================================================
+# /prisma/                           @github-dev-b
+# /src/server/db/                    @github-dev-b
+# /src/app/(storefront)/checkout/    @github-dev-b
+# /src/app/(account)/account/orders/ @github-dev-b
+# /src/app/(owner)/admin/            @github-dev-b
+# /src/app/api/payments/             @github-dev-b
+# /src/app/api/orders/               @github-dev-b
+# /src/app/api/admin/reports/        @github-dev-b
+# /src/components/admin/             @github-dev-b
+# /src/server/services/order.service.ts     @github-dev-b
+# /src/server/services/payment.service.ts   @github-dev-b
+# /src/server/services/inventory.service.ts @github-dev-b
+# /src/server/services/report.service.ts    @github-dev-b
+# /src/server/services/audit.service.ts     @github-dev-b
+# /src/server/services/setting.service.ts   @github-dev-b
+# /src/server/integrations/payment/         @github-dev-b
+# /src/server/integrations/shipping/        @github-dev-b
+
+# ==============================================================================
+# Lane C — Inovasi AI/Outfit, EKRAF Brand Story, Telegram & QA (Dev C)
+# ==============================================================================
+# /src/app/(storefront)/about/       @github-dev-c
+# /src/app/(owner)/admin/telegram/   @github-dev-c
+# /src/app/api/ai/                   @github-dev-c
+# /src/app/api/telegram/             @github-dev-c
+# /src/app/api/cron/                 @github-dev-c
+# /src/server/services/assistant.service.ts    @github-dev-c
+# /src/server/services/outfit.service.ts       @github-dev-c
+# /src/server/services/size.service.ts         @github-dev-c
+# /src/server/services/notification.service.ts @github-dev-c
+# /src/server/services/story.service.ts        @github-dev-c
+# /src/server/integrations/assistant/          @github-dev-c
+# /src/server/integrations/telegram/           @github-dev-c
+# /tests/e2e/                                  @github-dev-c
+

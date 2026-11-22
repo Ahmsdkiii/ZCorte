@@ -137,4 +137,3 @@ export function CheckoutConfirmationSection({ order }: { order: SubmittedOrder }
     </section>
   );
 }
-

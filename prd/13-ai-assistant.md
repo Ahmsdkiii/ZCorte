@@ -9,7 +9,7 @@ R0 memakai `ScriptedAssistant` deterministik. R1 dapat memakai model AI dengan t
 
 ### S.1 Arsitektur
 
-Pola **Tool-calling Agent terbatas**: model **tidak** punya akses DB; ia hanya memanggil *tools* yang dipublikasikan server. Tools memanggil service layer yang sama dengan UI (otorisasi sama).
+Pola **Tool-calling Agent terbatas**: model **tidak** punya akses DB; ia hanya memanggil _tools_ yang dipublikasikan server. Tools memanggil service layer yang sama dengan UI (otorisasi sama).
 
 ```mermaid
 flowchart LR
@@ -33,26 +33,26 @@ flowchart LR
 
 ### S.3 Pemetaan kemampuan brief → tool/aturan
 
-| # | Kemampuan (brief §6.A) | Mekanisme | Sumber |
-|---|---|---|---|
-| 1 | Cara memakai platform | `getHowToGuide(topic)` — FAQ statis tervalidasi | Konten statis |
-| 2 | Cari produk sesuai kebutuhan | `searchProducts({query, category, maxPrice, size, color})` | `ProductService` |
-| 3 | Rekomendasi gaya/preferensi | `searchProducts` + `styleTags`; saran dijelaskan | Atribut produk |
-| 4 | Rekomendasi sesuai anggaran | filter `maxPrice` / `minPrice` | DB |
-| 5 | Detail produk/warna/bahan/ukuran | `getProductDetail(slug)` | DB (`specifications`, varian) |
-| 6 | Bandingkan produk | `compareProducts(slugs[2..3])` → tabel atribut | DB |
-| 7 | Kombinasi outfit | `getOutfit(productSlug)` → `OutfitService` | Aturan (FR-033) |
-| 8 | Proses checkout | `getHowToGuide("checkout")` | Konten statis |
-| 9 | Status pesanan | `getMyOrderStatus(orderNumber)` — `userId` **diambil dari sesi server**, bukan parameter model; hanya Customer login | `OrderService` |
-| 10 | Arahkan ke halaman | Kartu/tautan `/shop/[slug]` | Router |
-| + | Rekomendasi ukuran | `recommendSize(slug, heightCm, weightKg, fit)` → `SizeService` | Size chart (FR-034) |
+| #   | Kemampuan (brief §6.A)           | Mekanisme                                                                                                            | Sumber                        |
+| --- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| 1   | Cara memakai platform            | `getHowToGuide(topic)` — FAQ statis tervalidasi                                                                      | Konten statis                 |
+| 2   | Cari produk sesuai kebutuhan     | `searchProducts({query, category, maxPrice, size, color})`                                                           | `ProductService`              |
+| 3   | Rekomendasi gaya/preferensi      | `searchProducts` + `styleTags`; saran dijelaskan                                                                     | Atribut produk                |
+| 4   | Rekomendasi sesuai anggaran      | filter `maxPrice` / `minPrice`                                                                                       | DB                            |
+| 5   | Detail produk/warna/bahan/ukuran | `getProductDetail(slug)`                                                                                             | DB (`specifications`, varian) |
+| 6   | Bandingkan produk                | `compareProducts(slugs[2..3])` → tabel atribut                                                                       | DB                            |
+| 7   | Kombinasi outfit                 | `getOutfit(productSlug)` → `OutfitService`                                                                           | Aturan (FR-033)               |
+| 8   | Proses checkout                  | `getHowToGuide("checkout")`                                                                                          | Konten statis                 |
+| 9   | Status pesanan                   | `getMyOrderStatus(orderNumber)` — `userId` **diambil dari sesi server**, bukan parameter model; hanya Customer login | `OrderService`                |
+| 10  | Arahkan ke halaman               | Kartu/tautan `/shop/[slug]`                                                                                          | Router                        |
+| +   | Rekomendasi ukuran               | `recommendSize(slug, heightCm, weightKg, fit)` → `SizeService`                                                       | Size chart (FR-034)           |
 
 ### S.4 Batasan akses
 
 - Tidak ada tool untuk pembayaran, mengubah pesanan, menulis ke DB, atau membaca data pelanggan lain. Semua tool **read-only**.
 - Untuk Visitor, tool pesanan tidak dipublikasikan; bila ditanya, asisten mengarahkan ke login.
 - Argumen tool divalidasi Zod; nilai di luar rentang ditolak.
-- Konten dari DB (nama/deskripsi) diperlakukan sebagai data, bukan instruksi (mitigasi *prompt injection* tidak langsung); output tool dibungkus penanda data.
+- Konten dari DB (nama/deskripsi) diperlakukan sebagai data, bukan instruksi (mitigasi _prompt injection_ tidak langsung); output tool dibungkus penanda data.
 
 ### S.5 Konfigurasi & biaya
 

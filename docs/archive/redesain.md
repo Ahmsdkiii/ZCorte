@@ -1,3 +1,7 @@
+> **DOKUMEN HISTORIS (ARSIP)**
+> Dokumen ini adalah brief redesign awal dari fase prototype "APEX" dan **bukan instruksi aktif**.
+> Sumber kebenaran produk dan UI saat ini adalah `AGENTS.md` dan `prd/README.md` (brand **ZCorté**).
+
 # APEX WEBSITE — MAJOR VISUAL REDESIGN
 
 Implementasi redesign sebelumnya sudah selesai, tetapi hasilnya masih terlalu mirip dengan desain awal. Perubahan visual yang dilakukan belum cukup signifikan.

@@ -26,18 +26,18 @@ Kontrak command, formatter, otorisasi, dan sumber data sama untuk dua transport:
 
 ### R.3 Katalog perintah (MVP read-only)
 
-| Perintah | Sumber data | Isi respons |
-|---|---|---|
-| `/start [token]` | `TelegramLinkToken` | Tautkan akun (FR-040) atau sapaan + daftar perintah bila sudah tertaut |
-| `/help` | statis | Daftar perintah |
-| `/dashboard` | `ReportService.overview` | Penjualan terverifikasi hari/bulan ini, refund tertunda, pesanan, stok kritis, tautan dashboard |
+| Perintah                                    | Sumber data                          | Isi respons                                                                                                                                |
+| ------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/start [token]`                            | `TelegramLinkToken`                  | Tautkan akun (FR-040) atau sapaan + daftar perintah bila sudah tertaut                                                                     |
+| `/help`                                     | statis                               | Daftar perintah                                                                                                                            |
+| `/dashboard`                                | `ReportService.overview`             | Penjualan terverifikasi hari/bulan ini, refund tertunda, pesanan, stok kritis, tautan dashboard                                            |
 | `/sales_today` `/sales_week` `/sales_month` | `ReportService.salesSummary(period)` | Penjualan terverifikasi, refund, jumlah pesanan, rata-rata nilai pesanan, status, produk terlaris, dan **perbandingan periode sebelumnya** |
-| `/orders` | `OrderService.listRecent(5)` | 5 pesanan terbaru (nomor, total, status) |
-| `/order <nomor>` | `OrderService.getByNumber` | Detail: item, total, status bayar, status; **tanpa alamat lengkap & telepon** |
-| `/pending_orders` | `OrderService.listNeedingAction` | `PAID` belum diproses; `NEEDS_ATTENTION` |
-| `/low_stock` | `InventoryService.listLow` | Varian stok ≤ ambang & stok 0, dikelompokkan per kategori |
-| `/top_products` | `ReportService.topProducts` | 5 terlaris + 5 kurang diminati (30 hari); "paling banyak dilihat" hanya bila `ProductEvent` tersedia |
-| `/summary` | gabungan | Ringkasan harian: penjualan, pesanan, stok, terlaris, hal butuh perhatian |
+| `/orders`                                   | `OrderService.listRecent(5)`         | 5 pesanan terbaru (nomor, total, status)                                                                                                   |
+| `/order <nomor>`                            | `OrderService.getByNumber`           | Detail: item, total, status bayar, status; **tanpa alamat lengkap & telepon**                                                              |
+| `/pending_orders`                           | `OrderService.listNeedingAction`     | `PAID` belum diproses; `NEEDS_ATTENTION`                                                                                                   |
+| `/low_stock`                                | `InventoryService.listLow`           | Varian stok ≤ ambang & stok 0, dikelompokkan per kategori                                                                                  |
+| `/top_products`                             | `ReportService.topProducts`          | 5 terlaris + 5 kurang diminati (30 hari); "paling banyak dilihat" hanya bila `ProductEvent` tersedia                                       |
+| `/summary`                                  | gabungan                             | Ringkasan harian: penjualan, pesanan, stok, terlaris, hal butuh perhatian                                                                  |
 
 Contoh format (angka berasal dari DB; ini hanya ilustrasi):
 
@@ -63,11 +63,11 @@ Event dan kebijakan pada FR-042. `NotificationService.notify(event)` membentuk `
 
 ### R.5 Laporan terjadwal & scheduler (R1)
 
-| Lingkungan | Mekanisme | Catatan |
-|---|---|---|
-| Vercel | Vercel Cron memanggil `/api/cron/*` | Frekuensi & jumlah cron bergantung paket; verifikasi batasan paket sebelum bergantung padanya. Cron memakai UTC → 07:00 WIB = 00:00 UTC |
-| VPS/Docker | Cron sistem / container `curl` ke endpoint, atau `node-cron` dalam proses | Pastikan satu instance saja yang menjalankan |
-| Cadangan universal | GitHub Actions `schedule` memanggil endpoint dengan `CRON_SECRET` | Gratis, tidak terikat hosting; toleransi keterlambatan menit |
+| Lingkungan         | Mekanisme                                                                 | Catatan                                                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Vercel             | Vercel Cron memanggil `/api/cron/*`                                       | Frekuensi & jumlah cron bergantung paket; verifikasi batasan paket sebelum bergantung padanya. Cron memakai UTC → 07:00 WIB = 00:00 UTC |
+| VPS/Docker         | Cron sistem / container `curl` ke endpoint, atau `node-cron` dalam proses | Pastikan satu instance saja yang menjalankan                                                                                            |
+| Cadangan universal | GitHub Actions `schedule` memanggil endpoint dengan `CRON_SECRET`         | Gratis, tidak terikat hosting; toleransi keterlambatan menit                                                                            |
 
 Semua endpoint cron: verifikasi `CRON_SECRET`, idempoten via `dedupeKey` periode, zona waktu `Asia/Jakarta`.
 

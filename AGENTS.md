@@ -2,12 +2,19 @@
 
 Dokumen ini berlaku untuk seluruh repository. Tujuannya adalah menghasilkan kode yang benar, aman, mudah dirawat, efisien, dan siap diuji—bukan sekadar terlihat selesai.
 
+> **Mulai di Sini (Peta Cepat):**
+>
+> - Setup & gambaran umum: [README.md](README.md) · [docs/guides/00-start-here.md](docs/guides/00-start-here.md)
+> - Resep membuat fitur end-to-end: [docs/guides/02-feature-recipe.md](docs/guides/02-feature-recipe.md)
+> - Database & anti-konflik migration: [docs/guides/03-database-workflow.md](docs/guides/03-database-workflow.md)
+> - Pembagian 3 lane & aturan PR: [docs/team/ownership.md](docs/team/ownership.md) · [CONTRIBUTING.md](CONTRIBUTING.md)
+
 ## 1. Urutan Sumber Kebenaran
 
 1. Ikuti permintaan pengguna yang paling baru dan eksplisit.
 2. Ikuti aturan pada `AGENTS.md` ini.
 3. Ikuti PRD di `prd/`; mulai dari `prd/README.md`, lalu baca hanya dokumen yang relevan dengan tugas.
-4. Ikuti kontrak, pola, penamaan, dan konfigurasi yang sudah ada di codebase.
+4. Ikuti kontrak, pola, penamaan, dan konfigurasi yang sudah ada di codebase — **kecuali pola prototype lama** yang melanggar arsitektur target (lihat tabel transisi di `docs/guides/00-start-here.md` §4).
 
 Jika kode bertentangan dengan PRD, jangan diam-diam mempertahankan perilaku lama. Jelaskan konflik, lalu sesuaikan kode atau dokumentasi dalam scope tugas. Jangan mengarang keputusan produk yang berdampak besar.
 
@@ -27,6 +34,7 @@ Jika kode bertentangan dengan PRD, jangan diam-diam mempertahankan perilaku lama
 
 Untuk setiap perubahan kode:
 
+0. Pastikan berada di branch fitur/fix yang sesuai (bukan `main`/`master`) dan periksa `docs/team/ownership.md` sebelum menyentuh modul milik lane lain atau file kontrak bersama.
 1. Pahami tujuan, acceptance criteria, dan alur pengguna yang terpengaruh.
 2. Untuk fitur baru atau perubahan fitur, buat/perbarui `docs/features/<feature-slug>.md` dari template sebelum implementasi dan jaga tetap sinkron sampai selesai.
 3. Inspeksi file terkait, konfigurasi, dependency, serta PRD relevan sebelum mengubah kode.
@@ -49,7 +57,7 @@ Jangan berhenti pada rencana jika pengguna meminta implementasi. Gunakan asumsi 
 - Hindari side effect tersembunyi, mutable global state, magic number, dan magic string.
 - Gunakan konstanta, enum/union, schema, atau configuration terpusat bila nilai memiliki makna domain.
 - Jangan menambah dependency jika platform atau dependency yang ada sudah cukup. Jika perlu dependency baru, jelaskan manfaat, risiko, ukuran, lisensi, dan maintenance-nya.
-- Jangan meninggalkan debug log, commented-out code, placeholder palsu, atau `TODO` tanpa konteks yang dapat ditindaklanjuti.
+- Jangan meninggalkan debug log, commented-out code, placeholder palsu, atau `TODO` tanpa format yang dapat ditindaklanjuti: `TODO(<owner>): <konteks/alasan> [<FR-ID atau issue>]`.
 - Jangan mengubah file yang tidak relevan atau menimpa pekerjaan pengguna.
 - Jangan melakukan refactor besar bersamaan dengan feature/bugfix kecuali memang diperlukan untuk correctness.
 - Semua file teks harus terformat konsisten dan lolos pemeriksaan repository.
@@ -92,12 +100,12 @@ Aturan arah dependensi:
 
 MVVM di proyek ini adalah pemisahan tanggung jawab, bukan alasan membuat class atau abstraksi tambahan.
 
-| Lapisan | Lokasi utama | Tanggung jawab | Dilarang |
-|---|---|---|---|
-| **Model** | `src/models/`, pure `src/lib/`, DTO dari server | Domain type, rule murni, mapper, formatter deterministik, dan representasi data | React hook/JSX, browser state, fetch tersembunyi, Prisma Client |
-| **ViewModel** | `src/hooks/use<Feature>ViewModel.ts`, provider fitur | State interaksi, derived UI state, event handler, koordinasi Action/API, dan API semantik untuk View | JSX, query Prisma, secret, authoritative business rule, duplikasi state server tanpa alasan |
-| **View** | `src/components/`, halaman interaktif | Render props/state, semantic HTML, meneruskan event ke ViewModel, dan komposisi layout | Business rule, fetch database, kalkulasi harga final, authorization |
-| **Server composition** | Server Component di `src/app/` | Memanggil service untuk initial data, memetakan DTO serializable, menyusun View, metadata | Menjadi ViewModel client, query Prisma langsung, business rule |
+| Lapisan                | Lokasi utama                                         | Tanggung jawab                                                                                       | Dilarang                                                                                    |
+| ---------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Model**              | `src/models/`, pure `src/lib/`, DTO dari server      | Domain type, rule murni, mapper, formatter deterministik, dan representasi data                      | React hook/JSX, browser state, fetch tersembunyi, Prisma Client                             |
+| **ViewModel**          | `src/hooks/use<Feature>ViewModel.ts`, provider fitur | State interaksi, derived UI state, event handler, koordinasi Action/API, dan API semantik untuk View | JSX, query Prisma, secret, authoritative business rule, duplikasi state server tanpa alasan |
+| **View**               | `src/components/`, halaman interaktif                | Render props/state, semantic HTML, meneruskan event ke ViewModel, dan komposisi layout               | Business rule, fetch database, kalkulasi harga final, authorization                         |
+| **Server composition** | Server Component di `src/app/`                       | Memanggil service untuk initial data, memetakan DTO serializable, menyusun View, metadata            | Menjadi ViewModel client, query Prisma langsung, business rule                              |
 
 Aturan implementasi MVVM:
 
@@ -116,6 +124,9 @@ Aturan implementasi MVVM:
 - `molecules/`: kombinasi kecil atom untuk satu tugas UI seperti selector atau form field.
 - `organisms/`: bagian halaman/fitur yang utuh dan boleh mengonsumsi ViewModel, misalnya ProductGrid atau CheckoutForm.
 - `compound/`: keluarga komponen kompleks dengan API komposisional dan shared context; ini pola komposisi, bukan level Atomic Design.
+- `providers/`: React context provider tingkat fitur/aplikasi (mis. `CartProvider`).
+- `admin/`: komponen khusus area Owner (`/admin`), mis. `DataTable`, `StatCard`, `SalesChart`.
+- `ui/`: primitif UI aksesibel (shadcn/Radix) yang dibungkus mengikuti design token.
 - Page/layout menyusun organism dan Server Component; hindari markup fitur besar langsung di page.
 - Jangan memecah komponen hanya demi jumlah baris. Ekstrak ketika ada tanggung jawab, reuse, state boundary, accessibility boundary, atau testing boundary yang jelas.
 - Satu file komponen tidak boleh mencampur data access server, business rule, state orchestration, dan markup kompleks sekaligus.
@@ -151,7 +162,7 @@ Kontrak implementasinya:
 - Simpan state seminimal mungkin. Filter/sort/pagination yang perlu dibagikan atau di-refresh direpresentasikan di URL.
 - Setiap halaman async wajib memiliki state loading, empty, error, dan success yang jelas.
 - Error message harus membantu pengguna tanpa membocorkan stack trace, query, secret, atau detail internal.
-- Gunakan semantic HTML terlebih dahulu; ARIA hanya melengkapi semantics yang belum tersedia.
+- Gunakan semantic HTML terlebih dahulu; ARIA hanya melengkapi semantics yang belum tersedia. Target aksesibilitas proyek ini adalah **WCAG 2.2 AA** (kontras ≥ 4,5:1, fokus terlihat, `aria-live` untuk status/chat, dan `prefers-reduced-motion`).
 - Semua interaksi wajib dapat digunakan dengan keyboard, memiliki focus state terlihat, label jelas, dan target sentuh memadai.
 - Pertahankan urutan fokus dan pulihkan fokus setelah dialog/drawer ditutup.
 - UI harus responsif minimal pada lebar 320, 390, 768, 1024, dan 1440 px tanpa overflow horizontal.
@@ -160,6 +171,11 @@ Kontrak implementasinya:
 - Gunakan `next/font`, metadata, canonical URL, JSON-LD, sitemap, dan robots secara konsisten untuk halaman publik terkait.
 - Hindari dependency client besar, barrel import yang memperbesar bundle, render ulang tanpa kebutuhan, dan data berlebih di client.
 - Jangan mengorbankan aksesibilitas demi animasi. Hormati `prefers-reduced-motion` dan hindari layout shift.
+
+### 7.5 Konvensi Penamaan dan Bahasa
+
+- **Bahasa:** Identifier kode (nama file, tipe, fungsi, variabel) memakai **bahasa Inggris**; dokumentasi (`prd/`, `docs/`, catatan teknis) memakai **bahasa Indonesia**; copy antarmuka pengguna (UI) untuk R0 memakai **bahasa Inggris** mengikuti D-03 melalui kamus/konstanta terpusat (`src/content/copy.ts` atau `src/lib/constants.ts`).
+- **Penamaan file:** Komponen React memakai `PascalCase.tsx`; ViewModel hook memakai `use<Feature>ViewModel.ts`; modul server dan boundary memakai sufiks peran (`<domain>.service.ts`, `<domain>.repository.ts`, `<domain>.actions.ts`, `<domain>.schema.ts`, `<domain>.mapper.ts`). Ikuti panduan langkah per langkah di `docs/guides/02-feature-recipe.md`.
 
 ## 8. Arsitektur Backend, Database, dan Prisma
 
@@ -210,7 +226,8 @@ Boundary tidak boleh memanggil repository atau Prisma langsung. Service tidak bo
 - Integrasi eksternal berada di balik interface yang dimiliki aplikasi, bukan tipe SDK provider.
 - Adapter wajib memiliki timeout, typed error mapping, retry terbatas dengan backoff hanya untuk operasi aman, dan deduplication bila relevan.
 - Kegagalan notifikasi/Telegram setelah transaksi tidak boleh membatalkan order yang sudah commit; simpan status untuk retry.
-- Cache hanya data yang aman dan pahami invalidasinya. Mutasi wajib melakukan `revalidateTag`/invalidasi yang tepat.
+- Gunakan `src/proxy.ts` (konvensi Next.js 16 pengganti `middleware.ts`) hanya sebagai lapisan awal redirect autentikasi (`/admin`, `/account`); otorisasi sesungguhnya wajib di service layer.
+- Cache hanya data yang aman dan pahami invalidasinya. Pada Next.js 16, gunakan `updateTag(tag)` di **Server Actions** agar mutasi langsung terlihat (_read-your-own-writes_), dan `revalidateTag(tag, "max")` di **Route Handlers**/webhook.
 - Tangani error database secara spesifik dan map ke error domain/API aman; jangan menelan error.
 - Gunakan structured logging dengan `requestId`/correlation ID dan redaction; jangan log payload sensitif.
 
@@ -229,7 +246,7 @@ Boundary tidak boleh memanggil repository atau Prisma langsung. Service tidak bo
 - Secret hanya berada di environment server dan tidak boleh memakai prefix publik.
 - Password wajib di-hash dengan algoritma yang sesuai PRD; jangan pernah disimpan atau dicatat dalam bentuk plaintext.
 - Gunakan cookie session yang `HttpOnly`, `Secure` pada production, dan `SameSite` yang sesuai.
-- Lindungi mutasi dari CSRF sesuai mekanisme auth yang digunakan.
+- Lindungi mutasi dari CSRF: Server Actions mengandalkan pemeriksaan `Origin` bawaan Next.js (jangan dinonaktifkan); Route Handler yang menerima mutasi berbasis sesi cookie wajib memeriksa header `Origin`/`Host` terhadap origin yang diizinkan.
 - Terapkan rate limiting pada login, registrasi, assistant, search sensitif, webhook, dan endpoint abuse-prone.
 - Verifikasi signature webhook dan lindungi terhadap replay sebelum memproses payload.
 - Sanitize/escape konten pengguna sesuai output context untuk mencegah XSS; jangan memakai `dangerouslySetInnerHTML` tanpa sanitizer dan alasan kuat.
@@ -262,40 +279,32 @@ Boundary tidak boleh memanggil repository atau Prisma langsung. Service tidak bo
 
 ## 13. Quality Gates
 
-Jalankan pemeriksaan yang tersedia dan relevan sebelum menyatakan selesai:
+Jalankan pemeriksaan yang sudah aktif sebelum menyatakan selesai:
 
 ```bash
-pnpm lint
-pnpm format:check
-pnpm typecheck
+pnpm check    # menjalankan pnpm lint && pnpm format:check && pnpm typecheck
 pnpm build
 ```
 
-Jika test script sudah tersedia, jalankan unit/integration test dan E2E yang relevan. Untuk perubahan berisiko tinggi atau lintas lapisan, jalankan seluruh quality gate. Jika sebuah command tidak dapat dijalankan, jelaskan penyebab dan apa yang belum terverifikasi.
+Status tooling saat ini:
 
-Hasil minimum yang diterima:
+| Pemeriksaan                                                                    | Status        | Keterangan                                   |
+| ------------------------------------------------------------------------------ | ------------- | -------------------------------------------- |
+| `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm check`, `pnpm build` | **Aktif**     | Wajib lulus di setiap PR                     |
+| `pnpm test` (Vitest unit + integrasi), `pnpm test:e2e` (Playwright + axe)      | **Target P1** | Aktif setelah harness Foundation P1 dipasang |
+| `pnpm jscpd`, `pnpm knip`, `pnpm db:migrate`, `pnpm db:seed`                   | **Target P1** | Aktif setelah tooling Foundation P1 dipasang |
 
-- Tidak ada error lint atau TypeScript baru.
-- Build production berhasil.
-- Test terkait lulus dan tidak flaky.
-- Tidak ada secret/PII, debug log, atau file sementara yang ikut berubah.
-- Tidak ada mock/seed yang menjadi dependency runtime untuk data inti.
-- Acceptance criteria dan skenario gagal yang relevan sudah diverifikasi.
-- Feature doc terkait lengkap, sinkron dengan implementasi, dan mencatat hasil validasi yang benar-benar dijalankan.
+Untuk perubahan berisiko tinggi atau lintas lapisan, jalankan seluruh quality gate yang tersedia. Jika sebuah command belum tersedia atau tidak dapat dijalankan, jelaskan penyebab dan apa yang belum terverifikasi secara jujur.
 
 ## 14. Definition of Done
 
-Sebuah tugas baru boleh disebut selesai bila:
+Sumber kebenaran tunggal Definition of Done adalah **`prd/16-roadmap-risk.md` §Y**, ditambah kewajiban dokumentasi fitur pada §16 di bawah ini:
 
-- Requirement dan acceptance criteria terpenuhi end-to-end.
-- Kode mengikuti layer dan kontrak PRD.
-- Happy path, edge case, authorization, dan error state ditangani.
-- Perubahan database memiliki migration dan strategi data yang aman.
-- Test yang sesuai telah ditambah/diperbarui dan dijalankan.
-- Aksesibilitas, responsive behavior, security, dan performance diperiksa sesuai risiko.
-- `docs/features/<feature-slug>.md` dibuat/diperbarui, statusnya akurat, dan seluruh keputusan/kontrak/test penting tercatat.
-- PRD diperbarui bila keputusan produk atau kontrak sumber kebenaran berubah; feature doc tidak menggantikan PRD.
-- Tidak ada pekerjaan wajib yang disembunyikan sebagai placeholder.
+- Seluruh Acceptance Criteria FR terkait terpenuhi end-to-end (happy path, negative/error state, otorisasi, dan tidak ada mock/seed sebagai fallback runtime).
+- Seluruh quality gate yang aktif (`pnpm check`, `pnpm build`, serta test terkait setelah P1) lulus tanpa error/warning baru dan tanpa explicit `any`.
+- Perubahan database memiliki migration dan strategi data yang aman sesuai `docs/guides/03-database-workflow.md`.
+- `docs/features/<feature-slug>.md` dibuat/diperbarui memakai slug resmi dari `docs/features/README.md`, statusnya akurat, dan hanya mencatat hasil validasi yang benar-benar dijalankan.
+- PRD diperbarui bila keputusan produk atau kontrak sumber kebenaran berubah; tidak ada pekerjaan wajib yang disembunyikan sebagai placeholder.
 
 ## 15. Larangan Keras
 
@@ -345,3 +354,12 @@ Feature doc minimal harus menjawab:
 - Jangan menyalin seluruh PRD ke feature doc. Tautkan bagian terkait dan dokumentasikan hanya detail implementasi serta keputusan spesifik fitur.
 - Jangan memasukkan secret, token, credential, data pelanggan, atau payload produksi ke dokumentasi.
 - Perubahan typo/formatting murni tidak membutuhkan feature doc baru. Bugfix memperbarui feature doc terkait jika mengubah perilaku, kontrak, risiko, atau skenario pengujian.
+
+## 17. Kolaborasi Tim Multi-Developer
+
+Project ini dikerjakan oleh **3 developer** secara paralel setelah Foundation P1. Ikuti aturan lengkap di [CONTRIBUTING.md](CONTRIBUTING.md), [docs/team/ownership.md](docs/team/ownership.md), dan [docs/guides/03-database-workflow.md](docs/guides/03-database-workflow.md):
+
+1. **Hormati batas lane:** Bekerjalah hanya pada branch fitur dan folder lane Anda; tag pemilik lane terkait jika terpaksa menyentuh modul lain.
+2. **Jangan ubah kontrak bersama di PR fitur:** Perubahan `prisma/schema.prisma`, `ErrorCode`/`ActionResult`, `AuthContext`, `env.ts`, atau design token wajib melalui PR terpisah berlabel `contract` setelah disepakati tim.
+3. **Patuhi protokol Prisma migration:** Satu PR maksimal satu migration baru, wajib rebase terhadap branch utama sebelum menjalankan `prisma migrate dev`, dan dilarang keras mengedit migration yang sudah di-merge.
+4. **Gunakan registry slug resmi:** Selalu pakai slug pada `docs/features/README.md` agar tidak tercipta dua dokumen fitur untuk satu kebutuhan yang sama.

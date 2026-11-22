@@ -1,15 +1,15 @@
 # PRD — ZCorté Fashion E-Commerce Platform
 
-| | |
-|---|---|
-| Tim | ZeroCode |
-| Konteks | Kompetisi Clean Code Web Programming, subtema EKRAF |
-| Versi | **1.2 — Baseline implementasi** |
-| Tanggal | 15 November 2026 |
-| Tumpukan utama | Next.js (App Router), React, TypeScript strict, Tailwind CSS |
-| Sumber desain | Implementasi visual yang saat ini ada di repository; aset dan design token yang sah dipertahankan |
-| Brand | **ZCorté** |
-| Status dokumen | Siap menjadi baseline; keputusan operasional yang belum final dicatat eksplisit di D.4 |
+|                |                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------- |
+| Tim            | ZeroCode                                                                                          |
+| Konteks        | Kompetisi Clean Code Web Programming, subtema EKRAF                                               |
+| Versi          | **1.3 — Baseline implementasi & kolaborasi tim**                                                  |
+| Tanggal        | 15 November 2026                                                                                  |
+| Tumpukan utama | Next.js (App Router), React, TypeScript strict, Tailwind CSS                                      |
+| Sumber desain  | Implementasi visual yang saat ini ada di repository; aset dan design token yang sah dipertahankan |
+| Brand          | **ZCorté**                                                                                        |
+| Status dokumen | Siap menjadi baseline; keputusan operasional yang belum final dicatat eksplisit di D.4            |
 
 ## Ringkasan
 
@@ -26,27 +26,27 @@ ZCorté adalah toko fashion online **satu brand** dengan dua peran berakun (**Ow
 
 ## Keputusan Final
 
-| Topik | Keputusan |
-|---|---|
-| Brand | **ZCorté** |
-| Jenis toko | Satu brand, bukan marketplace |
-| Peran | `OWNER` dan `CUSTOMER` (Visitor = pengunjung tanpa akun). Peran `STAFF` = Future |
-| Checkout | **Wajib login**; Visitor boleh browse, AI (pertanyaan produk), dan bag |
-| Pengiriman | Dilakukan toko sendiri; tarif tetap (Standard gratis, Express Rp45.000 dari prototype); Owner mengisi nama kurir + resi; pelanggan memakai tautan ke situs kurir |
-| Data inti R0 | PostgreSQL + Prisma sebagai satu-satunya sumber data runtime, termasuk produk; `localStorage` hanya untuk bag Visitor dan preferensi UI non-sensitif |
-| Pembayaran | R0 memakai adapter simulasi. Sandbox gateway hanya evaluasi R1; tanpa COD |
-| AI | R0 memakai `ScriptedAssistant` yang memanggil service nyata; R1 dapat memakai provider AI dengan tools read-only |
-| Telegram | R0 memakai Simulator Telegram khusus Owner; R1 memakai bot webhook read-only |
-| Visual | Implementasi repository saat ini menjadi baseline; fitur baru mengikuti design token dan art direction yang sama |
-| Akun | Owner dibuat lewat seed; registrasi publik selalu `CUSTOMER` |
+| Topik        | Keputusan                                                                                                                                                        |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Brand        | **ZCorté**                                                                                                                                                       |
+| Jenis toko   | Satu brand, bukan marketplace                                                                                                                                    |
+| Peran        | `OWNER` dan `CUSTOMER` (Visitor = pengunjung tanpa akun). Peran `STAFF` = Future                                                                                 |
+| Checkout     | **Wajib login**; Visitor boleh browse, AI (pertanyaan produk), dan bag                                                                                           |
+| Pengiriman   | Dilakukan toko sendiri; tarif tetap (Standard gratis, Express Rp45.000 dari prototype); Owner mengisi nama kurir + resi; pelanggan memakai tautan ke situs kurir |
+| Data inti R0 | PostgreSQL + Prisma sebagai satu-satunya sumber data runtime, termasuk produk; `localStorage` hanya untuk bag Visitor dan preferensi UI non-sensitif             |
+| Pembayaran   | R0 memakai adapter simulasi. Sandbox gateway hanya evaluasi R1; tanpa COD                                                                                        |
+| AI           | R0 memakai `ScriptedAssistant` yang memanggil service nyata; R1 dapat memakai provider AI dengan tools read-only                                                 |
+| Telegram     | R0 memakai Simulator Telegram khusus Owner; R1 memakai bot webhook read-only                                                                                     |
+| Visual       | Implementasi repository saat ini menjadi baseline; fitur baru mengikuti design token dan art direction yang sama                                                 |
+| Akun         | Owner dibuat lewat seed; registrasi publik selalu `CUSTOMER`                                                                                                     |
 
 ## Model release
 
-| Release | Tujuan | Ketergantungan eksternal |
-|---|---|---|
-| **R0 — Competition MVP** | Skenario demo end-to-end dan core backend nyata; katalog runtime selalu dibaca dari PostgreSQL | Tidak wajib; AI, payment, Telegram disimulasikan lewat adapter |
-| **R1 — Connected Demo** | Menghubungkan AI provider, Telegram Bot API, dan bila perlu payment sandbox | Memerlukan akun/kunci API dan jaringan |
-| **R2 — Production Readiness** | Hardening operasional, provider produksi, backup, observability, kebijakan privasi | Memerlukan keputusan bisnis dan infrastruktur produksi |
+| Release                       | Tujuan                                                                                         | Ketergantungan eksternal                                       |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **R0 — Competition MVP**      | Skenario demo end-to-end dan core backend nyata; katalog runtime selalu dibaca dari PostgreSQL | Tidak wajib; AI, payment, Telegram disimulasikan lewat adapter |
+| **R1 — Connected Demo**       | Menghubungkan AI provider, Telegram Bot API, dan bila perlu payment sandbox                    | Memerlukan akun/kunci API dan jaringan                         |
+| **R2 — Production Readiness** | Hardening operasional, provider produksi, backup, observability, kebijakan privasi             | Memerlukan keputusan bisnis dan infrastruktur produksi         |
 
 > **Aturan sumber data produk:** storefront dan seluruh service dilarang membaca `products.mock.ts`, JSON statis, atau file seed saat runtime. Script seed/bootstrap hanya boleh melakukan `INSERT/UPSERT` satu kali ke PostgreSQL untuk environment development/demo. Setelah data masuk, produk dikelola melalui Prisma dan halaman Owner; aplikasi hanya membaca tabel database.
 
@@ -56,26 +56,26 @@ ZCorté adalah toko fashion online **satu brand** dengan dua peran berakun (**Ow
 
 ## Daftar Dokumen
 
-| File | Isi | Bagian |
-|---|---|---|
-| [01-overview.md](01-overview.md) | Product Overview & Scope | A–F: ringkasan produk, masalah, visi, persona, scope MVP. |
-| [02-roles-and-flows.md](02-roles-and-flows.md) | Peran & Alur Pengguna | G dan J: peran, hak akses, dan alur. |
-| [03-fr-customer.md](03-fr-customer.md) | Functional Requirements — Customer | H.1: FR-001 sampai FR-013. |
-| [04-fr-owner.md](04-fr-owner.md) | Functional Requirements — Owner | H.2: FR-020 sampai FR-027. |
-| [05-fr-innovation-telegram.md](05-fr-innovation-telegram.md) | Functional Requirements — Inovasi & Telegram | H.3 dan H.4: FR-030 sampai FR-045. |
-| [06-innovation.md](06-innovation.md) | Inovasi & Prioritas | I: evaluasi ide, matriks prioritas, kombinasi untuk kompetisi. |
-| [07-mvp-prototype-plan.md](07-mvp-prototype-plan.md) | Rencana R0 Competition MVP | Z: target pengerjaan pertama tanpa ketergantungan layanan eksternal. |
-| [08-architecture.md](08-architecture.md) | Arsitektur Sistem & Struktur Proyek | N dan P. |
-| [09-tech-stack.md](09-tech-stack.md) | Technology Stack | O. |
-| [10-database.md](10-database.md) | Database & ERD | M. |
-| [11-api-spec.md](11-api-spec.md) | API & Server Actions | Q. |
-| [12-telegram.md](12-telegram.md) | Telegram Business Assistant | R. |
-| [13-ai-assistant.md](13-ai-assistant.md) | AI Shopping Assistant | S. |
-| [14-ui-ux.md](14-ui-ux.md) | UI/UX | K. |
-| [15-quality-security-testing.md](15-quality-security-testing.md) | Non-Functional, Keamanan, Pengujian | L, T, U. |
-| [16-roadmap-risk.md](16-roadmap-risk.md) | Roadmap, Risiko, Metrik, Definition of Done | V–Y. |
-| [17-appendix.md](17-appendix.md) | Lampiran | Kriteria penilaian, migrasi brand, pertanyaan terbuka. |
-| [18-prototype-analysis.md](18-prototype-analysis.md) | Analisis Prototype | 0. |
+| File                                                             | Isi                                          | Bagian                                                               |
+| ---------------------------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------- |
+| [01-overview.md](01-overview.md)                                 | Product Overview & Scope                     | A–F: ringkasan produk, masalah, visi, persona, scope MVP.            |
+| [02-roles-and-flows.md](02-roles-and-flows.md)                   | Peran & Alur Pengguna                        | G dan J: peran, hak akses, dan alur.                                 |
+| [03-fr-customer.md](03-fr-customer.md)                           | Functional Requirements — Customer           | H.1: FR-001 sampai FR-013.                                           |
+| [04-fr-owner.md](04-fr-owner.md)                                 | Functional Requirements — Owner              | H.2: FR-020 sampai FR-027.                                           |
+| [05-fr-innovation-telegram.md](05-fr-innovation-telegram.md)     | Functional Requirements — Inovasi & Telegram | H.3 dan H.4: FR-030 sampai FR-045.                                   |
+| [06-innovation.md](06-innovation.md)                             | Inovasi & Prioritas                          | I: evaluasi ide, matriks prioritas, kombinasi untuk kompetisi.       |
+| [07-mvp-prototype-plan.md](07-mvp-prototype-plan.md)             | Rencana R0 Competition MVP                   | Z: target pengerjaan pertama tanpa ketergantungan layanan eksternal. |
+| [08-architecture.md](08-architecture.md)                         | Arsitektur Sistem & Struktur Proyek          | N dan P.                                                             |
+| [09-tech-stack.md](09-tech-stack.md)                             | Technology Stack                             | O.                                                                   |
+| [10-database.md](10-database.md)                                 | Database & ERD                               | M.                                                                   |
+| [11-api-spec.md](11-api-spec.md)                                 | API & Server Actions                         | Q.                                                                   |
+| [12-telegram.md](12-telegram.md)                                 | Telegram Business Assistant                  | R.                                                                   |
+| [13-ai-assistant.md](13-ai-assistant.md)                         | AI Shopping Assistant                        | S.                                                                   |
+| [14-ui-ux.md](14-ui-ux.md)                                       | UI/UX                                        | K.                                                                   |
+| [15-quality-security-testing.md](15-quality-security-testing.md) | Non-Functional, Keamanan, Pengujian          | L, T, U.                                                             |
+| [16-roadmap-risk.md](16-roadmap-risk.md)                         | Roadmap, Risiko, Metrik, Definition of Done  | V–Y.                                                                 |
+| [17-appendix.md](17-appendix.md)                                 | Lampiran                                     | Kriteria penilaian, migrasi brand, pertanyaan terbuka.               |
+| [18-prototype-analysis.md](18-prototype-analysis.md)             | Analisis Prototype                           | 0.                                                                   |
 
 ## Urutan baca untuk implementasi R0
 
@@ -83,3 +83,19 @@ ZCorté adalah toko fashion online **satu brand** dengan dua peran berakun (**Ow
 2. `03-fr-customer.md`, `04-fr-owner.md`, dan `05-fr-innovation-telegram.md`.
 3. `07-mvp-prototype-plan.md`.
 4. `08-architecture.md`, `10-database.md`, `11-api-spec.md`, dan `15-quality-security-testing.md`.
+
+## Panduan Kerja Tim (3 Developer)
+
+PRD ini mendefinisikan **apa** yang dibangun. Untuk **cara kerja sehari-hari** tim 3 orang, ikuti dokumen operasional repository:
+
+- Quickstart & peta dokumen: [README.md](../README.md) · [docs/guides/00-start-here.md](../docs/guides/00-start-here.md)
+- Pembagian 3 lane paralel & kontrak bersama: [docs/team/ownership.md](../docs/team/ownership.md)
+- Resep fitur & alur migration: [docs/guides/02-feature-recipe.md](../docs/guides/02-feature-recipe.md) · [docs/guides/03-database-workflow.md](../docs/guides/03-database-workflow.md)
+- Aturan Git, PR & review silang: [CONTRIBUTING.md](../CONTRIBUTING.md)
+
+## Riwayat Perubahan
+
+| Versi   | Tanggal          | Ringkasan                                                                                                                                                                                                                                                                         |
+| ------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1.3** | 15 November 2026 | Penyelarasan Next.js 16 (`proxy.ts`, `updateTag`), kontrak `ActionResult`/`ErrorCode`, spesifikasi pembatalan Customer (`cancelMyOrder`), `retryPayment`, mekanisme expiry R0, pecahan `FR-027a`/`b`, entitas `OrderSequence` & `RateLimitBucket`, serta pembagian 3 lane paralel |
+| **1.2** | 15 November 2026 | Baseline implementasi R0 Competition MVP                                                                                                                                                                                                                                          |

@@ -12,7 +12,7 @@ import {
   SubmittedOrder,
 } from "@/models/types/checkout";
 
-export const SHIPPING_METHODS: ShippingMethodOption[] = [
+export const SHIPPING_METHODS: [ShippingMethodOption, ...ShippingMethodOption[]] = [
   {
     id: "standard",
     label: "Standard Ground Dispatch",
@@ -29,7 +29,7 @@ export const SHIPPING_METHODS: ShippingMethodOption[] = [
   },
 ];
 
-export const PAYMENT_METHODS: PaymentMethodOption[] = [
+export const PAYMENT_METHODS: [PaymentMethodOption, ...PaymentMethodOption[]] = [
   {
     id: "virtual_account",
     label: "Bank Transfer / Virtual Account",
@@ -173,4 +173,3 @@ export function useCheckoutViewModel() {
     handleSubmitOrder,
   };
 }
-

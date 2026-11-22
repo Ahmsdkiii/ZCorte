@@ -1,6 +1,7 @@
 import { CollectionMeta } from "../types/collection";
+import { ProductCollection } from "../types/product";
 
-export const mockCollections: Record<string, CollectionMeta> = {
+export const mockCollections: Record<ProductCollection, CollectionMeta> = {
   tactix: {
     id: "tactix",
     name: "APEX TACTIX",

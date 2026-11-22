@@ -1,13 +1,16 @@
 # [Nama Fitur]
 
-| Metadata | Nilai |
-|---|---|
-| Slug | `[feature-slug]` |
-| Status | `DRAFT` / `IN_PROGRESS` / `DONE` |
-| Owner | `[nama/tim]` |
-| Referensi PRD/FR | `[prd/xx.md, FR-xxx]` |
-| Dibuat | `YYYY-MM-DD` |
-| Diperbarui | `YYYY-MM-DD` |
+| Metadata         | Nilai                                         |
+| ---------------- | --------------------------------------------- |
+| Slug             | `[feature-slug dari docs/features/README.md]` |
+| Status           | `DRAFT` / `IN_PROGRESS` / `DONE`              |
+| Lane             | `[Lane A / Lane B / Lane C / P1]`             |
+| Owner            | `[nama developer]`                            |
+| Reviewer         | `[nama developer dari lane lain]`             |
+| Branch / PR      | `[feat/fr-xxx-... / #PR]`                     |
+| Referensi PRD/FR | `[prd/xx.md, FR-xxx]`                         |
+| Dibuat           | `YYYY-MM-DD`                                  |
+| Diperbarui       | `YYYY-MM-DD`                                  |
 
 ## 1. Masalah dan Outcome
 
@@ -22,6 +25,17 @@ Jelaskan masalah pengguna/bisnis, outcome yang diharapkan, dan indikator bahwa f
 ### Out of Scope
 
 - [Hal yang sengaja tidak dikerjakan]
+
+### 2.3 Kontrak Bersama yang Disentuh
+
+Centang jika fitur ini menyentuh kontrak bersama (jika ada yang dicentang, ajukan PR berlabel `contract` lebih dulu dan koordinasikan dengan tim):
+
+- [ ] Tidak ada kontrak bersama yang berubah
+- [ ] `prisma/schema.prisma` (membutuhkan migration — lihat `docs/guides/03-database-workflow.md`)
+- [ ] `ErrorCode` / `ActionResult` (`src/server/lib/errors.ts`, `src/lib/action-result.ts`)
+- [ ] `AuthContext` / guard peran (`src/server/auth/*`)
+- [ ] Environment variables (`src/config/env.ts`, `.env.example`)
+- [ ] Design tokens (`src/app/globals.css`) atau komponen lintas lane (`ProductCard`, `DataTable`, dll.)
 
 ## 3. User Story dan Acceptance Criteria
 
@@ -39,12 +53,12 @@ Tuliskan happy path dan recovery path secara ringkas. Tambahkan Mermaid hanya ji
 
 ### 5.1 Pemetaan Frontend MVVM
 
-| Lapisan | File/Modul | Tanggung jawab |
-|---|---|---|
-| Model/DTO | `[path]` | `[domain type, rule, mapper]` |
-| ViewModel | `[path]` | `[state, derived state, actions]` |
-| View | `[path]` | `[render dan event binding]` |
-| Server composition | `[path]` | `[initial data dan composition]` |
+| Lapisan            | File/Modul | Tanggung jawab                    |
+| ------------------ | ---------- | --------------------------------- |
+| Model/DTO          | `[path]`   | `[domain type, rule, mapper]`     |
+| ViewModel          | `[path]`   | `[state, derived state, actions]` |
+| View               | `[path]`   | `[render dan event binding]`      |
+| Server composition | `[path]`   | `[initial data dan composition]`  |
 
 Jelaskan sumber state (server, URL, form, atau UI lokal) dan alasan setiap Client Component.
 
@@ -79,9 +93,9 @@ Jelaskan sumber state (server, URL, form, atau UI lokal) dan alasan setiap Clien
 
 ### 5.5 Kontrak API/Action
 
-| Kontrak | Input | Output sukses | Error yang diharapkan |
-|---|---|---|---|
-| `[nama endpoint/action]` | `[schema]` | `[DTO]` | `[code/status]` |
+| Kontrak                  | Input      | Output sukses | Error yang diharapkan |
+| ------------------------ | ---------- | ------------- | --------------------- |
+| `[nama endpoint/action]` | `[schema]` | `[DTO]`       | `[code/status]`       |
 
 Jangan memasukkan secret, token, atau data produksi ke dokumen.
 
@@ -133,13 +147,13 @@ Jangan memasukkan secret, token, atau data produksi ke dokumen.
 
 Isi setelah implementasi. Jangan menandai command yang tidak benar-benar dijalankan.
 
-| Pemeriksaan | Hasil | Catatan |
-|---|---|---|
-| `pnpm lint` | `[PASS/FAIL/NOT RUN]` | |
-| `pnpm format:check` | `[PASS/FAIL/NOT RUN]` | |
-| `pnpm typecheck` | `[PASS/FAIL/NOT RUN]` | |
-| Test relevan | `[PASS/FAIL/NOT RUN]` | |
-| `pnpm build` | `[PASS/FAIL/NOT RUN]` | |
+| Pemeriksaan         | Hasil                 | Catatan |
+| ------------------- | --------------------- | ------- |
+| `pnpm lint`         | `[PASS/FAIL/NOT RUN]` |         |
+| `pnpm format:check` | `[PASS/FAIL/NOT RUN]` |         |
+| `pnpm typecheck`    | `[PASS/FAIL/NOT RUN]` |         |
+| Test relevan        | `[PASS/FAIL/NOT RUN]` |         |
+| `pnpm build`        | `[PASS/FAIL/NOT RUN]` |         |
 
 ## 12. Keputusan dan Risiko Tersisa
 

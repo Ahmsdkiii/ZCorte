@@ -45,4 +45,3 @@ export interface SubmittedOrder {
   paymentMethod: PaymentMethodOption;
   customer: CheckoutFormData;
 }
-

@@ -11,13 +11,13 @@
 
 R0 membuktikan seluruh alur dapat dijalankan dan didemonstrasikan tanpa akun layanan eksternal. **Core bisnis tetap nyata**: Auth.js, Prisma/PostgreSQL, otorisasi server, transaksi stok, pesanan, audit, dan laporan. Hanya payment gateway, AI provider, Telegram Bot API, pengiriman pihak ketiga, email, serta upload cloud yang memakai adapter simulasi atau implementasi lokal.
 
-| Termasuk | Tidak termasuk |
-|---|---|
-| Seluruh alur Visitor → Customer → pesanan → Owner | Payment gateway produksi, API kurir, provider AI, Telegram Bot API |
-| Auth.js, `OWNER`/`CUSTOMER`, guard server, dan akun seed | Google OAuth, email transaksional, lupa password |
+| Termasuk                                                                                         | Tidak termasuk                                                                  |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| Seluruh alur Visitor → Customer → pesanan → Owner                                                | Payment gateway produksi, API kurir, provider AI, Telegram Bot API              |
+| Auth.js, `OWNER`/`CUSTOMER`, guard server, dan akun seed                                         | Google OAuth, email transaksional, lupa password                                |
 | PostgreSQL + Prisma sebagai sumber runtime untuk produk, stok, akun, pesanan, laporan, dan audit | Cloudinary; file repository hanya menyimpan aset gambar R0, bukan record produk |
-| Pembayaran, AI, dan Telegram melalui adapter simulasi | Cron terjadwal nyata; laporan dapat dipicu manual saat demo |
-| Pengiriman toko: tarif tetap, kurir, dan resi manual | Security/operasional produksi penuh dan multi-instance |
+| Pembayaran, AI, dan Telegram melalui adapter simulasi                                            | Cron terjadwal nyata; laporan dapat dipicu manual saat demo                     |
+| Pengiriman toko: tarif tetap, kurir, dan resi manual                                             | Security/operasional produksi penuh dan multi-instance                          |
 
 ### Z.2 Dasar teknis
 
@@ -29,14 +29,15 @@ R0 membuktikan seluruh alur dapat dijalankan dan didemonstrasikan tanpa akun lay
 
 ### Z.3 Simulasi per komponen
 
-| Komponen | Cara disimulasikan | Aturan agar tetap jujur |
-|---|---|---|
-| **Login/daftar** | Auth.js Credentials + database; seed 1 `OWNER` dan 1 `CUSTOMER` demo | Password memakai hash produksi; guard peran dan kepemilikan berjalan di service server |
-| **Pembayaran** | Halaman "Pembayaran (simulasi)" dengan tombol *Bayar sekarang* dan *Gagal*. Menekan *Bayar* memanggil `markPaid` | Total dihitung ulang di service, bukan dari UI; pesanan belum dibayar kedaluwarsa (timer demo dapat dipercepat) |
-| **Pengiriman** | `ShippingProvider` tarif tetap (Standard gratis, Express Rp45.000 dari prototype) | Nama kurir + resi diisi Owner; tombol "Lacak di situs kurir" hanya tautan |
-| **AI Assistant** | `ScriptedAssistant` memetakan intent demo ke service nyata (`searchProducts`, `OutfitService`, FAQ, status pesanan) | Harga/stok selalu dari DB; pertanyaan di luar data dijawab terbatas; Visitor tidak dapat membaca status pesanan |
-| **Telegram** | Panel **"Simulator Telegram"** di area Owner. Perintah memanggil `ReportService`/`InventoryService` yang sama dengan dashboard; event domain membuat pesan simulasi | Hanya Owner dapat membuka panel; angka identik dengan dashboard; area Owner menandainya sebagai simulator |
-| **Laporan terjadwal** | Tombol "Kirim laporan harian sekarang" di simulator | Dedupe per periode tetap diterapkan |
+| Komponen              | Cara disimulasikan                                                                                                                                                                              | Aturan agar tetap jujur                                                                                         |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Login/daftar**      | Auth.js Credentials + database; seed 1 `OWNER` dan 1 `CUSTOMER` demo                                                                                                                            | Password memakai hash produksi; guard peran dan kepemilikan berjalan di service server                          |
+| **Pembayaran**        | Halaman "Pembayaran (simulasi)" dengan tombol _Bayar sekarang_ dan _Gagal_. Menekan _Bayar_ memanggil `markPaid`                                                                                | Total dihitung ulang di service, bukan dari UI; pesanan belum dibayar kedaluwarsa (timer demo dapat dipercepat) |
+| **Pengiriman**        | `ShippingProvider` tarif tetap (Standard gratis, Express Rp45.000 dari prototype)                                                                                                               | Nama kurir + resi diisi Owner; tombol "Lacak di situs kurir" hanya tautan                                       |
+| **Expiry pesanan**    | `OrderService.expireDueOrders()` dipanggil secara lazy saat checkout/buka daftar pesanan + tombol Owner "Proses kedaluwarsa sekarang" (`adminExpireOrdersNow`) + `POST /api/cron/expire-orders` | Tetap idempoten dan melepaskan stok melalui `InventoryMovement(RELEASE)` tepat satu kali                        |
+| **AI Assistant**      | `ScriptedAssistant` memetakan intent demo ke service nyata (`searchProducts`, `OutfitService`, FAQ, status pesanan)                                                                             | Harga/stok selalu dari DB; pertanyaan di luar data dijawab terbatas; Visitor tidak dapat membaca status pesanan |
+| **Telegram**          | Panel **"Simulator Telegram"** di area Owner. Perintah memanggil `ReportService`/`InventoryService` yang sama dengan dashboard; event domain membuat pesan simulasi                             | Hanya Owner dapat membuka panel; angka identik dengan dashboard; area Owner menandainya sebagai simulator       |
+| **Laporan terjadwal** | Tombol "Kirim laporan harian sekarang" di simulator                                                                                                                                             | Dedupe per periode tetap diterapkan                                                                             |
 
 ### Z.4 Halaman & alur yang dibangun
 
@@ -53,17 +54,30 @@ R0 membuktikan seluruh alur dapat dijalankan dan didemonstrasikan tanpa akun lay
 5. Owner mengubah status Diproses → Dikirim (isi kurir + resi). Customer melihat timeline dan resi di `/account/orders`.
 6. Stok produk turun di bawah ambang → notifikasi stok menipis muncul di simulator → `/low_stock`.
 
-### Z.5 Urutan pengerjaan
+### Z.5 Urutan pengerjaan (Tim 3 Developer Paralel)
 
-| Tahap | Isi | Hasil |
-|---|---|---|
-| P1 | Prisma/PostgreSQL, migration, bootstrap data awal ke DB, Auth.js, guard, service/repository | Katalog dan akun dibaca dari database; tidak ada runtime mock |
-| P2 | Katalog, search, PDP, guest bag, login, merge bag | Visitor → Customer berjalan |
-| P3 | Checkout, transaksi `placeOrder`, pembayaran simulasi, konfirmasi, riwayat | Pesanan end-to-end dan stok konsisten |
-| P4 | Owner: dashboard, pesanan, status, kurir/resi, inventori, pengaturan minimum | Owner dapat mengoperasikan demo |
-| P5 | `ReportService`, audit, Simulator Telegram, dan notifikasi | Angka dashboard/simulator identik |
-| P6 | Scripted Assistant, Outfit minimum, dan Brand Story | Inovasi dan EKRAF dapat didemonstrasikan |
-| P7 | E2E, otorisasi, akurasi laporan, responsif 320–1440 px, a11y, dan quality gates | Siap demo |
+Setelah **P1 (Foundation)** selesai dan ter-merge bersama, pekerjaan dipecah menjadi **3 lane paralel** ([docs/team/ownership.md](../docs/team/ownership.md)) lalu bertemu kembali pada tahap integrasi dan **P7 (Hardening)**:
+
+```mermaid
+flowchart LR
+  P1["P1 Foundation (Bersama)<br/>Schema, Auth, Guard, Error Model"] --> A["Lane A: P2 Storefront, Search, Bag, Akun"]
+  P1 --> B["Lane B: P3–P4 Checkout, Order, Payment & Owner Ops"]
+  P1 --> C["Lane C: P5–P6 Simulator Telegram, Assistant, Brand Story & QA Harness"]
+  A --> INT["Integrasi Demo"]
+  B --> INT
+  C --> INT
+  INT --> P7["P7 Hardening R0 (Bersama)"]
+```
+
+| Tahap | Lane           | Isi                                                                                                                                | Hasil                                                                               |
+| ----- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| P1    | Bersama / Lead | Prisma/PostgreSQL, migration, bootstrap data awal ke DB, Auth.js, `proxy.ts`, guard, `ActionResult`/`AppError`, env, migrasi brand | Katalog dan akun dibaca dari database; tidak ada runtime mock; kontrak bersama siap |
+| P2    | Lane A         | Katalog, koleksi dinamis, search, PDP, guest bag, login, merge bag, profil/alamat                                                  | Visitor → Customer berjalan                                                         |
+| P3    | Lane B         | Checkout, transaksi `placeOrder`, pembayaran simulasi, `retryPayment`, `cancelMyOrder`, expiry lazy, riwayat                       | Pesanan end-to-end dan stok konsisten                                               |
+| P4    | Lane B         | Owner: dashboard, pesanan, status, kurir/resi, inventori, `FR-027a` pengaturan minimum, audit log                                  | Owner dapat mengoperasikan demo                                                     |
+| P5    | Lane B + C     | `ReportService` (Lane B) dikonsumsi bersama oleh Dashboard Owner & Simulator Telegram/notifikasi (Lane C)                          | Angka dashboard/simulator identik                                                   |
+| P6    | Lane C         | `ScriptedAssistant`, Outfit minimum, dan Brand Story (`/about`)                                                                    | Inovasi dan EKRAF dapat didemonstrasikan                                            |
+| P7    | Bersama        | E2E, otorisasi, akurasi laporan, responsif 320–1440 px, a11y, dan quality gates                                                    | Siap demo                                                                           |
 
 Jika waktu terbatas, pangkas dengan urutan: scheduled report → Smart Size → wishlist/review → CRUD kategori/koleksi → Outfit versi lengkap. **Jangan memangkas** Brand Story, guard peran, transaksi stok, perhitungan total server, audit inti, atau akurasi laporan.
 
