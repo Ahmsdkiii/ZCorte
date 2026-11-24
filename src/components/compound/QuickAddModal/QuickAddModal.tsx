@@ -6,14 +6,16 @@ import { Product, ProductColorId, ProductSize } from "@/models/types/product";
 import { SizeSelector } from "@/components/molecules/SizeSelector";
 import { ColorSelector } from "@/components/molecules/ColorSelector";
 import { Icon } from "@/components/atoms/Icon";
-import { getAvailableSizes, getProductColor } from "@/lib/product";
-import { formatIDR } from "@/lib/utils";
+import { getAvailableSizes, getProductColor, StockStatus } from "@/models/domain/productRules";
+import { formatIDR, cn } from "@/lib/utils";
 
 export interface QuickAddModalProps {
   product: Product | null;
   selectedColorId: ProductColorId;
   isOpen: boolean;
   selectedSize: ProductSize | null;
+  currentStock: number;
+  stockStatus: StockStatus;
   onSelectColor: (colorId: ProductColorId) => void;
   onSelectSize: (size: ProductSize) => void;
   onClose: () => void;
@@ -25,6 +27,8 @@ export function QuickAddModal({
   selectedColorId,
   isOpen,
   selectedSize,
+  currentStock,
+  stockStatus,
   onSelectColor,
   onSelectSize,
   onClose,
@@ -71,15 +75,15 @@ export function QuickAddModal({
       <div className="mb-7 flex items-center justify-between gap-5 border-t border-line pt-5">
         <div>
           <p className="eyebrow flex items-center gap-2 text-muted before:block before:h-1.5 before:w-1.5 before:bg-[var(--accent)]">
-            APEX / {product.collection.toUpperCase()}
+            ZCORTÉ / {product.collection.toUpperCase()}
           </p>
-          <h2 className="mt-1.5 text-[25px] tracking-[-0.035em]">{product.name}</h2>
+          <h2 className="mt-1.5 text-[25px] font-bold tracking-[-0.035em]">{product.name}</h2>
         </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close size selector"
-          className="flex min-h-11 min-w-11 items-center justify-center text-muted hover:text-ink"
+          className="flex min-h-11 min-w-11 items-center justify-center text-muted hover:text-ink cursor-pointer"
         >
           <Icon name="close" size={20} />
         </button>
@@ -98,9 +102,22 @@ export function QuickAddModal({
         <div>
           <p className="text-base font-semibold">{formatIDR(product.price)}</p>
           <p className="mt-1 text-xs text-muted">Color: {activeColor.name}</p>
-          <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted">
-            Concept Product &middot; Demo Availability
-          </p>
+          <div className="mt-2">
+            <span
+              className={cn(
+                "px-2 py-0.5 text-[8px] font-semibold tracking-[0.1em] uppercase",
+                stockStatus === "in_stock" && "bg-surface text-ink border border-line",
+                stockStatus === "low_stock" &&
+                  "bg-amber-500/10 text-amber-700 border border-amber-500/30",
+                stockStatus === "out_of_stock" &&
+                  "bg-red-500/10 text-red-700 border border-red-500/30"
+              )}
+            >
+              {stockStatus === "in_stock" && "IN STOCK"}
+              {stockStatus === "low_stock" && `LOW STOCK (${currentStock} LEFT)`}
+              {stockStatus === "out_of_stock" && "OUT OF STOCK"}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -123,16 +140,24 @@ export function QuickAddModal({
           availableSizes={availableSizes}
           selectedSize={selectedSize ?? undefined}
           onSelectSize={onSelectSize}
+          sizesWithStock={activeColor.stockBySize}
         />
       </div>
 
       <button
         type="button"
-        disabled={!selectedSize}
+        disabled={!selectedSize || currentStock <= 0}
         onClick={onConfirm}
-        className="flex min-h-[54px] w-full items-center justify-center bg-button px-[22px] py-[18px] text-[11px] font-semibold tracking-[0.08em] text-button-text transition-colors hover:bg-button-hover disabled:cursor-not-allowed disabled:opacity-40"
+        className={cn(
+          "flex min-h-[54px] w-full items-center justify-center px-[22px] py-[18px] text-[11px] font-semibold tracking-[0.08em] uppercase transition-colors cursor-pointer",
+          !selectedSize || currentStock <= 0
+            ? "bg-muted/30 text-muted cursor-not-allowed border border-line"
+            : "bg-button text-button-text hover:bg-button-hover"
+        )}
       >
-        ADD TO BAG &mdash; {formatIDR(product.price)}
+        {currentStock <= 0 && selectedSize
+          ? "OUT OF STOCK"
+          : `ADD TO BAG — ${formatIDR(product.price)}`}
       </button>
     </dialog>
   );

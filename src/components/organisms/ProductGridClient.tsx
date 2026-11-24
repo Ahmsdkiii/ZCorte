@@ -18,6 +18,8 @@ export function ProductGridClient({ products, fourColsOnWide = false }: ProductG
     selectedColorId,
     selectedSize,
     isOpen,
+    currentStock,
+    stockStatus,
     setSelectedSize,
     handleSelectColor,
     openQuickAdd,
@@ -53,6 +55,8 @@ export function ProductGridClient({ products, fourColsOnWide = false }: ProductG
         selectedColorId={selectedColorId}
         isOpen={isOpen}
         selectedSize={selectedSize}
+        currentStock={currentStock}
+        stockStatus={stockStatus}
         onSelectColor={handleSelectColor}
         onSelectSize={setSelectedSize}
         onConfirm={confirmAdd}
