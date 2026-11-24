@@ -22,6 +22,10 @@ export interface ProductColorVariantDto {
   };
   unavailable_sizes?: ProductSize[];
   unavailableSizes?: ProductSize[];
+  stock_by_size?: Partial<Record<ProductSize, number>>;
+  stockBySize?: Partial<Record<ProductSize, number>>;
+  stock_one_size?: number;
+  stockOneSize?: number;
 }
 
 export interface ProductDto {
@@ -66,6 +70,8 @@ export function mapProductColorDtoToDomain(dto: ProductColorVariantDto): Product
       back: dto.images?.back ?? dto.back_image ?? "",
     },
     unavailableSizes: dto.unavailableSizes ?? dto.unavailable_sizes,
+    stockBySize: dto.stockBySize ?? dto.stock_by_size,
+    stockOneSize: dto.stockOneSize ?? dto.stock_one_size,
   };
 }
 

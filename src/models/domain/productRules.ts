@@ -167,6 +167,32 @@ export function getGalleryImages(product: Product, colorId?: ProductColorId): st
   return [...colorImages, ...context];
 }
 
+export function getProductStock(
+  product: Product,
+  colorId?: ProductColorId,
+  size?: ProductSize | null
+): number {
+  const color = getProductColor(product, colorId);
+  if (isOneSize(product) || size === null || size === undefined) {
+    if (color.stockOneSize !== undefined) {
+      return color.stockOneSize;
+    }
+    if (color.stockBySize) {
+      return Object.values(color.stockBySize).reduce((acc, curr) => acc + (curr ?? 0), 0);
+    }
+    return 10;
+  }
+  return color.stockBySize?.[size] ?? 0;
+}
+
+export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
+
+export function getStockStatus(stock: number): StockStatus {
+  if (stock <= 0) return "out_of_stock";
+  if (stock <= 3) return "low_stock";
+  return "in_stock";
+}
+
 export function buildCartItemId(
   productId: string,
   colorId: ProductColorId,

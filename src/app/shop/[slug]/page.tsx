@@ -8,7 +8,7 @@ import {
   getRelatedProducts,
   getProducts,
 } from "@/models/services/productService";
-import { getProductColor } from "@/lib/product";
+import { getProductColor } from "@/models/domain/productRules";
 import { generateProductSchema, generateBreadcrumbSchema } from "@/lib/jsonLd";
 import { buildPageMetadata } from "@/lib/metadata";
 
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const defaultColor = getProductColor(product);
   return buildPageMetadata({
-    title: product.name,
+    title: `${product.name} — ZCorté`,
     description: product.description,
     path: `/shop/${product.slug}`,
     image: defaultColor.images.front,
@@ -54,10 +54,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   const productJsonLd = generateProductSchema(product);
   const breadcrumbJsonLd = generateBreadcrumbSchema([
-    { name: "APEX", url: "/" },
+    { name: "ZCorté", url: "/" },
+    { name: "Shop", url: "/shop" },
     {
       name: product.collection.toUpperCase(),
-      url: `/collections/${product.collection}`,
+      url: `/shop?collection=${product.collection}`,
     },
     { name: product.name, url: `/shop/${product.slug}` },
   ]);
@@ -85,12 +86,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             className="mt-24 border-t border-line pt-[76px] md:mt-36 md:pt-[110px]"
           >
             <div className="mb-7 flex items-center justify-between gap-5 md:mb-[38px]">
-              <p className="eyebrow text-[8px] md:text-[10px]">THE APEX SYSTEM / CONCEPT CATALOG</p>
+              <p className="eyebrow text-[8px] md:text-[10px]">ZCORTÉ / COMPLETE THE LOOK</p>
               <Link
                 href={`/shop?collection=${product.collection}`}
-                className="py-2 text-[10px] tracking-[0.08em] underline underline-offset-[5px]"
+                className="py-2 text-[10px] tracking-[0.08em] underline underline-offset-[5px] hover:text-muted transition-colors"
               >
-                SHOP {product.collection.toUpperCase()} ↗
+                EXPLORE {product.collection.toUpperCase()} ↗
               </Link>
             </div>
             <h2 className="mb-5 text-[clamp(38px,5.5vw,88px)]">
@@ -99,7 +100,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <span className="text-muted">NEXT MOVE.</span>
             </h2>
             <p className="mb-[35px] text-[11px] leading-[1.7] tracking-[0.015em] text-muted">
-              Concept products &middot; Generated imagery &middot; Demo pricing
+              Designed in Bandung, West Java &middot; High-spec technical textiles &middot;
+              Small-batch craft
             </p>
             <ProductGridClient products={relatedProducts} />
           </section>
