@@ -38,7 +38,7 @@ Gunakan slug resmi pada tabel berikut untuk mencegah duplikasi dokumen antar dev
 | Slug (`docs/features/<slug>.md`) | Fitur                                                  | Referensi FR                   | Lane       | Status        |
 | -------------------------------- | ------------------------------------------------------ | ------------------------------ | ---------- | ------------- |
 | `foundation`                     | Database, Auth, Guard, Error Model & Brand Migration   | FR-010, Lampiran B             | P1 (Semua) | `IN_PROGRESS` |
-| `catalog-browse`                 | Homepage, Koleksi Dinamis & Katalog Filter/Sort        | FR-001, FR-002, FR-003         | Lane A     | `NOT_STARTED` |
+| `catalog-browse`                 | Homepage, Koleksi Dinamis & Katalog Filter/Sort        | FR-001, FR-002, FR-003         | Lane A     | `IN_PROGRESS` |
 | `product-search`                 | Pencarian Produk (`ILIKE` + Trigram)                   | FR-004                         | Lane A     | `NOT_STARTED` |
 | `product-detail`                 | Halaman Detail Produk (PDP) & Galeri                   | FR-005                         | Lane A     | `NOT_STARTED` |
 | `bag`                            | Guest Bag, Server Cart & Merge saat Login              | FR-006                         | Lane A     | `NOT_STARTED` |

@@ -18,7 +18,7 @@ export interface CinemaStoryPinnedProps {
 
 export function CinemaStoryPinned({
   id = "story-flow",
-  eyebrow = "APEX / THE CONNECTED SYSTEM",
+  eyebrow = "ZCORTÉ / THE CONNECTED SYSTEM",
   title = "BEFORE THE PRODUCT, THERE IS A CONDITION.",
   skipTarget = "#collections",
   skipLabel = "SKIP CINEMATIC SEQUENCE",
@@ -72,6 +72,10 @@ export function CinemaStoryPinned({
     const targetScroll = containerTop + Math.min(0.98, targetProgress) * totalScrollable;
     window.scrollTo({ top: targetScroll, behavior: "smooth" });
   };
+
+  if (steps.length === 0) {
+    return null;
+  }
 
   return (
     <div ref={containerRef} id={id} className="relative h-[450vh] w-full bg-cinematic-bg">
@@ -171,11 +175,11 @@ export function CinemaStoryPinned({
                   </p>
                   <span
                     className={cn(
-                      "mt-[18px] block text-[8px] tracking-[0.12em] text-[#c4c9c8] transition-all duration-700 delay-300 ease-apex md:mt-[35px]",
+                      "mt-[18px] block text-[8px] tracking-[0.12em] text-[#c4c9c8] transition-all duration-700 delay-300 ease-zcorte md:mt-[35px]",
                       isActive ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
                     )}
                   >
-                    GENERATED CONCEPT STUDY / APEX
+                    EDITORIAL SYSTEM STUDY / ZCORTÉ
                   </span>
                 </div>
               </article>
