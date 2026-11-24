@@ -27,10 +27,13 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+       - name: Install dependencies
+         run: pnpm install --frozen-lockfile
 
-      - name: Run ESLint
+       - name: Generate Prisma Client
+         run: pnpm db:generate
+
+       - name: Run ESLint
         run: pnpm lint
 
       - name: Check formatting

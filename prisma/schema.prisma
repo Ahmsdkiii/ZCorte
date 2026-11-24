@@ -1,0 +1,655 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  OWNER
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ProductColorFamily {
+  NEUTRAL
+  EARTH
+  COOL
+  WARM
+  BOLD
+}
+
+enum CategorySlot {
+  TOP
+  BOTTOM
+  OUTER
+  SHOES
+  ACCESSORY
+}
+
+enum ProductImageView {
+  FRONT
+  BACK
+  CONTEXT
+}
+
+enum ProductFit {
+  SLIM
+  REGULAR
+  RELAXED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentMethod {
+  VA
+  QRIS
+  CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  NEEDS_ATTENTION
+  REFUND_PENDING
+  REFUNDED
+}
+
+enum InventoryMovementType {
+  INITIAL
+  RESERVE
+  RELEASE
+  ADJUSTMENT
+}
+
+enum OrderActorType {
+  CUSTOMER
+  OWNER
+  SYSTEM
+}
+
+enum NotificationType {
+  ORDER_PAID
+  LOW_STOCK
+  OUT_OF_STOCK
+  ORDER_CANCELLED_AFTER_PAID
+  PAYMENT_NEEDS_ATTENTION
+  UNPROCESSED_REMINDER
+  SCHEDULED_REPORT
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum AuditChannel {
+  WEB
+  SIMULATOR
+  TELEGRAM
+}
+
+enum ProductEventType {
+  VIEW
+  SEARCH
+}
+
+model User {
+  id                   String               @id @default(cuid())
+  name                 String?
+  email                String               @unique
+  emailVerified        DateTime?
+  image                String?
+  passwordHash         String?
+  role                 Role                 @default(CUSTOMER)
+  phone                String?
+  personalizationOptIn Boolean              @default(false)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  accounts             Account[]
+  sessions             Session[]
+  addresses            Address[]
+  cart                 Cart?
+  orders               Order[]
+  wishlistItems        WishlistItem[]
+  reviews              Review[]
+  productEvents        ProductEvent[]
+  auditLogs            AuditLog[]
+  inventoryMovements   InventoryMovement[]
+  orderStatusHistories OrderStatusHistory[]
+  telegramLinks        TelegramAdminLink[]
+  telegramLinkTokens   TelegramLinkToken[]
+  updatedSettings      StoreSetting[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Collection {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  name        String
+  tagline     String
+  focus       String
+  description String      @db.Text
+  accentColor String
+  heroImage   String
+  keywords    Json?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  products    Product[]
+  storySteps  StoryStep[]
+
+  @@index([isActive])
+  @@map("collections")
+}
+
+model Category {
+  id        String       @id @default(cuid())
+  slug      String       @unique
+  name      String
+  slot      CategorySlot
+  parentId  String?
+  parent    Category?    @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Category[]   @relation("CategoryHierarchy")
+  products  Product[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([parentId])
+  @@index([slot])
+  @@map("categories")
+}
+
+model Product {
+  id             String            @id @default(cuid())
+  slug           String            @unique
+  name           String
+  price          Int
+  description    String            @db.Text
+  status         ProductStatus     @default(DRAFT)
+  featured       Boolean           @default(false)
+  fit            ProductFit
+  material       String
+  styleTags      Json
+  specifications Json
+  collectionId   String
+  categoryId     String
+  collection     Collection        @relation(fields: [collectionId], references: [id], onDelete: Restrict)
+  category       Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  colors         ProductColor[]
+  variants       ProductVariant[]
+  relationsFrom  ProductRelation[] @relation("ProductRelationSource")
+  relationsTo    ProductRelation[] @relation("ProductRelationTarget")
+  sizeChart      SizeChart?
+  wishlistItems  WishlistItem[]
+  reviews        Review[]
+  productEvents  ProductEvent[]
+  orderItems     OrderItem[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([status, featured])
+  @@index([collectionId, status])
+  @@index([categoryId, status])
+  @@map("products")
+}
+
+model ProductRelation {
+  id              String  @id @default(cuid())
+  sourceProductId String
+  targetProductId String
+  sortOrder       Int     @default(0)
+  sourceProduct   Product @relation("ProductRelationSource", fields: [sourceProductId], references: [id], onDelete: Cascade)
+  targetProduct   Product @relation("ProductRelationTarget", fields: [targetProductId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceProductId, targetProductId])
+  @@index([sourceProductId, sortOrder])
+  @@map("product_relations")
+}
+
+model ProductColor {
+  id        String             @id @default(cuid())
+  productId String
+  name      String
+  swatchHex String
+  family    ProductColorFamily
+  product   Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  images    ProductImage[]
+  variants  ProductVariant[]
+
+  @@unique([productId, name])
+  @@index([productId])
+  @@map("product_colors")
+}
+
+model ProductImage {
+  id        String           @id @default(cuid())
+  colorId   String
+  url       String
+  view      ProductImageView
+  altText   String
+  sortOrder Int              @default(0)
+  color     ProductColor     @relation(fields: [colorId], references: [id], onDelete: Cascade)
+
+  @@index([colorId, sortOrder])
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id                 String              @id @default(cuid())
+  productId          String
+  colorId            String
+  size               String?
+  sku                String              @unique
+  stock              Int                 @default(0)
+  lowStockThreshold  Int                 @default(5)
+  product            Product             @relation(fields: [productId], references: [id], onDelete: Restrict)
+  color              ProductColor        @relation(fields: [colorId], references: [id], onDelete: Restrict)
+  cartItems          CartItem[]
+  orderItems         OrderItem[]
+  inventoryMovements InventoryMovement[]
+
+  @@index([productId])
+  @@index([stock])
+  @@index([productId, colorId, size])
+  @@map("product_variants")
+}
+
+model SizeChart {
+  id        String         @id @default(cuid())
+  productId String         @unique
+  product   Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rows      SizeChartRow[]
+
+  @@map("size_charts")
+}
+
+model SizeChartRow {
+  id          String    @id @default(cuid())
+  sizeChartId String
+  size        String
+  minHeight   Int?
+  maxHeight   Int?
+  minWeight   Int?
+  maxWeight   Int?
+  sizeChart   SizeChart @relation(fields: [sizeChartId], references: [id], onDelete: Cascade)
+
+  @@unique([sizeChartId, size])
+  @@map("size_chart_rows")
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, variantId])
+  @@map("cart_items")
+}
+
+model Address {
+  id            String   @id @default(cuid())
+  userId        String
+  recipientName String
+  phone         String
+  street        String
+  apartment     String?
+  city          String
+  province      String
+  postalCode    String
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isDefault])
+  @@map("addresses")
+}
+
+model Order {
+  id                 String               @id @default(cuid())
+  orderNumber        String               @unique
+  userId             String
+  status             OrderStatus          @default(PENDING_PAYMENT)
+  subtotal           Int
+  shippingCost       Int
+  discount           Int                  @default(0)
+  total              Int
+  shippingMethod     String
+  shippingCourier    String?
+  trackingNumber     String?
+  shippingAddress    Json
+  cancelReason       String?
+  idempotencyKey     String
+  expiresAt          DateTime
+  paidAt             DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items              OrderItem[]
+  payments           Payment[]
+  statusHistory      OrderStatusHistory[]
+  inventoryMovements InventoryMovement[]
+  promotionId        String?
+  promotion          Promotion?           @relation(fields: [promotionId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, idempotencyKey])
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+  @@index([expiresAt, status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id            String         @id @default(cuid())
+  orderId       String
+  variantId     String
+  nameSnapshot  String
+  colorSnapshot String
+  sizeSnapshot  String?
+  unitPrice     Int
+  quantity      Int
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant       ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  product       Product?       @relation(fields: [productId], references: [id])
+  productId     String?
+
+  @@index([orderId])
+  @@index([variantId])
+  @@map("order_items")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  orderId        String
+  method         PaymentMethod
+  provider       String
+  providerRef    String?       @unique
+  status         PaymentStatus @default(PENDING)
+  amount         Int
+  refundedAmount Int           @default(0)
+  paidAt         DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  order          Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, status])
+  @@map("payments")
+}
+
+model OrderStatusHistory {
+  id          String         @id @default(cuid())
+  orderId     String
+  fromStatus  OrderStatus?
+  toStatus    OrderStatus
+  actorUserId String?
+  actorType   OrderActorType
+  reason      String?
+  createdAt   DateTime       @default(now())
+  order       Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actor       User?          @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@map("order_status_history")
+}
+
+model InventoryMovement {
+  id          String                @id @default(cuid())
+  variantId   String
+  orderId     String?
+  actorUserId String?
+  type        InventoryMovementType
+  delta       Int
+  reason      String
+  createdAt   DateTime              @default(now())
+  variant     ProductVariant        @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  order       Order?                @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  actor       User?                 @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([variantId, createdAt])
+  @@index([orderId])
+  @@map("inventory_movements")
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  rating    Int
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, productId])
+  @@index([productId, createdAt])
+  @@map("reviews")
+}
+
+model Promotion {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  kind        String
+  value       Int
+  startsAt    DateTime
+  endsAt      DateTime
+  quota       Int?
+  minSubtotal Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orders      Order[]
+
+  @@index([code, startsAt, endsAt])
+  @@map("promotions")
+}
+
+model ProductEvent {
+  id        String           @id @default(cuid())
+  userId    String
+  productId String?
+  type      ProductEventType
+  query     String?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([productId, type, createdAt])
+  @@map("product_events")
+}
+
+model StoreSetting {
+  key         String   @id
+  value       Json
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@map("store_settings")
+}
+
+model StoryStep {
+  id           String      @id @default(cuid())
+  collectionId String?
+  step         Int
+  numberStr    String
+  title        String
+  headline     String
+  description  String      @db.Text
+  image        String
+  imageAlt     String
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, step])
+  @@index([collectionId, step])
+  @@map("story_steps")
+}
+
+model TelegramAdminLink {
+  id             String            @id @default(cuid())
+  userId         String
+  telegramUserId BigInt            @unique
+  chatId         BigInt
+  notifyPrefs    Json?
+  revokedAt      DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications  NotificationLog[]
+
+  @@index([userId, revokedAt])
+  @@map("telegram_admin_links")
+}
+
+model TelegramLinkToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("telegram_link_tokens")
+}
+
+model NotificationLog {
+  id            String             @id @default(cuid())
+  linkId        String?
+  recipientKey  String
+  type          NotificationType
+  dedupeKey     String
+  status        NotificationStatus @default(PENDING)
+  payload       Json
+  attemptCount  Int                @default(0)
+  nextAttemptAt DateTime?
+  sentAt        DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  link          TelegramAdminLink? @relation(fields: [linkId], references: [id], onDelete: SetNull)
+
+  @@unique([recipientKey, dedupeKey])
+  @@index([status, nextAttemptAt])
+  @@index([recipientKey, createdAt])
+  @@map("notification_logs")
+}
+
+model AuditLog {
+  id          String       @id @default(cuid())
+  actorUserId String?
+  channel     AuditChannel
+  action      String
+  entity      String
+  metadata    Json
+  ipAddress   String?
+  telegramId  BigInt?
+  createdAt   DateTime     @default(now())
+  actor       User?        @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId, createdAt])
+  @@index([entity, createdAt])
+  @@map("audit_logs")
+}
+
+model OrderSequence {
+  period    String   @id
+  lastValue Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@map("order_sequences")
+}
+
+model RateLimitBucket {
+  key         String   @id
+  windowStart DateTime
+  count       Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  @@index([windowStart])
+  @@map("rate_limit_buckets")
+}
