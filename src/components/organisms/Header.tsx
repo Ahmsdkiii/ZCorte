@@ -4,18 +4,21 @@ import React from "react";
 import Link from "next/link";
 import { Icon } from "@/components/atoms";
 import { useHeaderViewModel } from "@/hooks/useHeaderViewModel";
+import { NAV_ITEMS, SITE_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
-  { num: "01", label: "Explore", href: "/#brand" },
-  { num: "02", label: "TACTIX", href: "/collections/tactix", collection: "tactix" },
-  { num: "03", label: "APEXTIVE", href: "/collections/apextive", collection: "apextive" },
-  { num: "04", label: "OUTDOOR", href: "/collections/outdoor", collection: "outdoor" },
-] as const;
-
 export function Header() {
-  const { pathname, isCommerce, totalCount, toggleCart, dialogRef, openMenu, closeMenu } =
-    useHeaderViewModel();
+  const {
+    pathname,
+    isCommerce,
+    totalCount,
+    toggleCart,
+    dialogRef,
+    isMenuOpen,
+    openMenu,
+    closeMenu,
+    handleDialogBackdropClick,
+  } = useHeaderViewModel();
 
   return (
     <header
@@ -26,20 +29,20 @@ export function Header() {
     >
       <Link
         href="/"
-        aria-label="APEX home"
+        aria-label={`${SITE_NAME} home`}
         className={cn(
           "relative font-display font-black leading-none tracking-[-0.06em] [-webkit-text-stroke:1.1px_currentColor]",
-          isCommerce ? "text-[32px] md:text-[36px]" : "text-[32px] md:text-[38px]"
+          isCommerce ? "text-[30px] md:text-[34px]" : "text-[30px] md:text-[36px]"
         )}
       >
-        APEX
+        {SITE_NAME}
       </Link>
 
       <nav
         aria-label="Main navigation"
         className="hidden items-center gap-5 text-[10px] tracking-[0.06em] md:flex lg:gap-[34px]"
       >
-        {NAV_LINKS.map((link) => {
+        {NAV_ITEMS.map((link) => {
           const isCurrent = pathname === link.href;
           const hasCollection = "collection" in link && link.collection;
           return (
@@ -76,17 +79,30 @@ export function Header() {
         <button
           type="button"
           onClick={toggleCart}
-          aria-label={`Open bag, ${totalCount} items`}
-          className="whitespace-nowrap text-[10px] tracking-[0.08em] md:text-[11px]"
+          aria-label={`Open bag, ${totalCount} ${totalCount === 1 ? "item" : "items"}`}
+          className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap px-1.5 text-[10px] tracking-[0.08em] transition-opacity hover:opacity-80 md:text-[11px]"
         >
-          BAG <span className="text-muted">({totalCount})</span>
+          <span>BAG</span>
+          <span
+            aria-live="polite"
+            aria-atomic="true"
+            className={cn(
+              "inline-flex min-w-[22px] items-center justify-center px-1.5 py-0.5 text-[10px] font-semibold leading-none tracking-normal transition-colors",
+              totalCount > 0
+                ? "bg-ink text-surface"
+                : "border border-line bg-surface-raised text-muted"
+            )}
+          >
+            {totalCount}
+          </span>
         </button>
 
         <button
           type="button"
           onClick={openMenu}
           aria-label="Open navigation"
-          aria-expanded="false"
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-navigation-dialog"
           className="flex h-11 w-11 items-center justify-center md:hidden"
         >
           <Icon name="menu" size={24} />
@@ -94,13 +110,15 @@ export function Header() {
       </div>
 
       <dialog
+        id="mobile-navigation-dialog"
         ref={dialogRef}
+        onClick={handleDialogBackdropClick}
         aria-label="Mobile navigation"
         className="fixed inset-0 z-50 m-0 h-svh max-h-svh w-full max-w-full border-0 bg-surface p-[30px] text-ink backdrop:bg-black/70"
       >
         <div className="mb-[70px] flex items-center justify-between">
-          <span className="relative font-display text-[32px] font-black leading-none tracking-[-0.06em] [-webkit-text-stroke:1.1px_currentColor]">
-            APEX
+          <span className="relative font-display text-[30px] font-black leading-none tracking-[-0.06em] [-webkit-text-stroke:1.1px_currentColor]">
+            {SITE_NAME}
             <span className="absolute top-[3px] -right-3 text-[9px] font-bold tracking-normal [-webkit-text-stroke:0px]">
               ®
             </span>
@@ -116,7 +134,7 @@ export function Header() {
         </div>
 
         <nav aria-label="Mobile links" className="my-6 mb-11 grid">
-          {NAV_LINKS.map((link) => (
+          {NAV_ITEMS.map((link) => (
             <Link
               key={link.href}
               href={link.href}

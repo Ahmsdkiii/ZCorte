@@ -5,7 +5,7 @@ import { Header } from "@/components/organisms/Header";
 import { Footer } from "@/components/organisms/Footer";
 import { CartDrawer } from "@/components/compound/CartDrawer";
 import { CartProvider } from "@/components/providers/CartProvider";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/constants";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/constants";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: `%s — ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
-  metadataBase: new URL("https://ecommerce.pixelnusa.com"),
+  metadataBase: new URL(SITE_URL),
   alternates: { canonical: "/" },
   openGraph: {
     title: `${SITE_NAME} — Here, the journey begins.`,
@@ -36,8 +36,8 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/apex/campaign-main.jpeg",
-        alt: "APEX journey through a volcanic landscape",
+        url: "/images/apex/campaign-main-0.jpeg",
+        alt: `${SITE_NAME} editorial campaign through a volcanic landscape`,
       },
     ],
   },
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${SITE_NAME} — Here, the journey begins.`,
     description: SITE_DESCRIPTION,
-    images: ["/images/apex/campaign-main.jpeg"],
+    images: ["/images/apex/campaign-main-0.jpeg"],
   },
 };
 

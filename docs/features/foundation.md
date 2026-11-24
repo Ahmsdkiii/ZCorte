@@ -59,12 +59,12 @@ Tidak ada user flow langsung. Alur teknisnya: schema Prisma → migration → Po
 
 ### 5.1 Pemetaan Frontend MVVM
 
-| Lapisan            | File/Modul             | Tanggung jawab                       |
-| ------------------ | ---------------------- | ------------------------------------ |
-| Model/DTO          | `prisma/schema.prisma` | Persistence model dan enum database  |
-| ViewModel          | N/A                    | Tidak ada UI pada subtask ini        |
-| View               | N/A                    | Tidak ada UI pada subtask ini        |
-| Server composition | N/A                    | Akan digunakan oleh fitur berikutnya |
+| Lapisan            | File/Modul                                                         | Tanggung jawab                                                                          |
+| ------------------ | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| Model/DTO          | `prisma/schema.prisma`, `src/lib/constants.ts`                     | Persistence model database serta konstanta identitas brand & navigasi terpusat ZCorté   |
+| ViewModel          | `src/hooks/useHeaderViewModel.ts`                                  | State menu mobile (`isMenuOpen`), total item bag, serta handler dialog & cart drawer    |
+| View               | `src/components/organisms/Header.tsx`, `Footer.tsx`, `globals.css` | Navbar responsif dengan Cart Counter badge (`aria-live`), Footer, & design tokens v4    |
+| Server composition | `src/app/layout.tsx`                                               | RootLayout, font `Archivo` & `Geist`, metadata SEO/OpenGraph ZCorté, dan `CartProvider` |
 
 ### 5.2 Komposisi Komponen
 
@@ -147,6 +147,12 @@ Tidak ada API atau Server Action pada subtask ini.
 - `package.json`, `pnpm-lock.yaml` — dependency `bcryptjs`.
 - `src/server/db/prisma.ts` — Prisma Client singleton server-only.
 - `src/server/db/transaction.ts` — helper transaction typed.
+- `src/app/globals.css` — design tokens Tailwind CSS v4 (`--ease-zcorte`, `--color-cinematic-border`, status tokens).
+- `src/lib/constants.ts` — identitas brand `ZCorté` dan item navigasi terpusat.
+- `src/app/layout.tsx` — RootLayout dan metadata SEO/OpenGraph ZCorté.
+- `src/hooks/useHeaderViewModel.ts` — ViewModel header (state `isMenuOpen`, `totalCount`, dialog controls).
+- `src/components/organisms/Header.tsx` — Navbar responsif dengan Cart Counter badge & `aria-expanded` WCAG 2.2 AA.
+- `src/components/organisms/Footer.tsx` — Footer editorial ZCorté berbasis token & konstanta terpusat.
 - `docs/features/foundation.md` — dokumentasi implementasi foundation.
 
 ## 11. Hasil Validasi
