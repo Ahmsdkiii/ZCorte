@@ -126,10 +126,16 @@ export function CheckoutConfirmationSection({ order }: { order: SubmittedOrder }
 
       <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-line pt-7">
         <Link
-          href="/shop"
+          href="/account"
           className="inline-flex min-h-[50px] items-center justify-center bg-button px-7 py-3.5 text-[11px] font-semibold tracking-[0.08em] text-button-text uppercase transition-colors hover:bg-button-hover cursor-pointer"
         >
-          CONTINUE EXPLORING ↗
+          TRACK ORDER &amp; INVOICE ↗
+        </Link>
+        <Link
+          href="/shop"
+          className="inline-flex min-h-[50px] items-center justify-center border border-line bg-surface px-7 py-3.5 text-[11px] font-semibold tracking-[0.08em] text-ink uppercase transition-colors hover:border-ink cursor-pointer"
+        >
+          CONTINUE EXPLORING
         </Link>
         <Link
           href="/"

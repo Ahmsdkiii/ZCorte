@@ -76,9 +76,12 @@ export const AccountOrdersSection: FC<AccountOrdersSectionProps> = ({ orders }) 
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <span className="text-xs font-bold tracking-widest text-black">
+                    <Link
+                      href={`/account/orders/${order.orderNumber}`}
+                      className="text-xs font-bold tracking-widest text-black underline-offset-4 hover:underline"
+                    >
                       {order.orderNumber}
-                    </span>
+                    </Link>
                     <span
                       className={`inline-block border px-2 py-0.5 text-[8px] font-bold tracking-widest uppercase ${getStatusBadgeClass(
                         order.status
@@ -142,13 +145,19 @@ export const AccountOrdersSection: FC<AccountOrdersSectionProps> = ({ orders }) 
                   )}
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <Link
+                    href={`/account/orders/${order.orderNumber}`}
+                    className="border border-control bg-surface-raised px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-ink hover:border-ink"
+                  >
+                    VIEW INVOICE &amp; TRACK ↗
+                  </Link>
                   {order.status === "PENDING_PAYMENT" && (
                     <Link
-                      href={`/checkout`}
+                      href={`/account/orders/${order.orderNumber}`}
                       className="border border-black bg-black px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-white hover:opacity-85"
                     >
-                      PAY NOW
+                      PAY OR CANCEL
                     </Link>
                   )}
                 </div>
