@@ -76,6 +76,16 @@ export function Header() {
           <Icon name="arrow-up-right" size={14} />
         </Link>
 
+        {/* ACCOUNT LINK */}
+        <Link
+          href="/account"
+          aria-label="Account and client portal"
+          className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap px-1.5 text-[10px] tracking-[0.08em] transition-opacity hover:opacity-80 md:text-[11px]"
+        >
+          <Icon name="user" size={15} />
+          <span className="hidden sm:inline">ACCOUNT</span>
+        </Link>
+
         <button
           type="button"
           onClick={toggleCart}
@@ -151,6 +161,26 @@ export function Header() {
               <Icon name="arrow-up-right" size={18} className="ml-auto shrink-0" />
             </Link>
           ))}
+          {/* Mobile Account Link */}
+          <Link
+            href="/account"
+            onClick={closeMenu}
+            className="flex items-center gap-[18px] border-b border-line py-[23px] font-display text-[clamp(24px,6vw,40px)] font-bold tracking-[-0.04em] text-ink"
+          >
+            <span className="font-body text-[10px] font-normal tracking-widest text-muted">05</span>
+            Account / Sign In
+            <Icon name="arrow-up-right" size={18} className="ml-auto shrink-0" />
+          </Link>
+          {/* Mobile Account Link */}
+          <Link
+            href="/account"
+            onClick={closeMenu}
+            className="flex items-center gap-[18px] border-b border-line py-[23px] font-display text-[clamp(24px,6vw,40px)] font-bold tracking-[-0.04em] text-ink"
+          >
+            <span className="font-body text-[10px] font-normal tracking-widest text-muted">05</span>
+            Account / Sign In
+            <Icon name="arrow-up-right" size={18} className="ml-auto shrink-0" />
+          </Link>
         </nav>
 
         <Link
