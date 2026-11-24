@@ -4,15 +4,15 @@ import { buildPageMetadata } from "@/lib/metadata";
 import { generateBreadcrumbSchema } from "@/lib/jsonLd";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Checkout — Equipment Dispatch",
+  title: "Checkout — ZCorté Order Dispatch",
   description:
-    "Complete your simulated APEX equipment order. Configure dispatch coordinates, courier tier, and settlement channel.",
+    "Complete your ZCorté technical equipment order. Configure dispatch coordinates, courier tier, and payment settlement channel.",
   path: "/checkout",
 });
 
 export default function CheckoutPage() {
   const breadcrumbJsonLd = generateBreadcrumbSchema([
-    { name: "APEX", url: "/" },
+    { name: "ZCorté", url: "/" },
     { name: "Shop", url: "/shop" },
     { name: "Checkout", url: "/checkout" },
   ]);
