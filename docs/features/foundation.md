@@ -27,7 +27,7 @@ Aplikasi membutuhkan sumber kebenaran PostgreSQL untuk akun, katalog, bag, pesan
 
 ### Out of Scope
 
-- Seed/bootstrap data.
+- Seed/bootstrap data terpisah dari schema migration.
 - Auth.js adapter dan guard.
 - Repository, service, action, dan API.
 - Data migration produksi atau backfill.
@@ -48,6 +48,7 @@ Aplikasi membutuhkan sumber kebenaran PostgreSQL untuk akun, katalog, bag, pesan
 - [x] Given database development lokal tersedia, when migration dijalankan, then seluruh tabel dan constraint R0 terbentuk.
 - [x] Given schema Prisma, when `prisma validate` dan `prisma generate` dijalankan, then schema valid dan client berhasil dibuat.
 - [x] Runtime source data tetap PostgreSQL melalui Prisma; tidak ada mock/seed fallback.
+- [x] Seed demo dapat dijalankan berulang kali dengan `upsert` tanpa menggandakan record.
 
 ## 4. Alur Pengguna
 
@@ -139,17 +140,20 @@ Tidak ada API atau Server Action pada subtask ini.
 
 - `prisma/schema.prisma` — kontrak model persistence R0.
 - `prisma/migrations/` — initial migration PostgreSQL.
+- `prisma/seed.ts` — bootstrap demo idempotent untuk user dan katalog.
+- `.env.example` — placeholder password seed development.
+- `package.json`, `pnpm-lock.yaml` — dependency `bcryptjs`.
 - `docs/features/foundation.md` — dokumentasi implementasi foundation.
 
 ## 11. Hasil Validasi
 
-| Pemeriksaan         | Hasil  | Catatan                                                                                            |
-| ------------------- | ------ | -------------------------------------------------------------------------------------------------- |
-| `pnpm lint`         | `PASS` | Lulus.                                                                                             |
-| `pnpm format:check` | `PASS` | Lulus.                                                                                             |
-| `pnpm typecheck`    | `PASS` | Lulus.                                                                                             |
-| Test relevan        | `PASS` | `prisma validate`, `prisma generate`, dan reset/migrate database lokal lulus; seed belum tersedia. |
-| `pnpm build`        | `PASS` | Lulus.                                                                                             |
+| Pemeriksaan         | Hasil  | Catatan                                                                                           |
+| ------------------- | ------ | ------------------------------------------------------------------------------------------------- |
+| `pnpm lint`         | `PASS` | Lulus.                                                                                            |
+| `pnpm format:check` | `PASS` | Lulus.                                                                                            |
+| `pnpm typecheck`    | `PASS` | Lulus.                                                                                            |
+| Test relevan        | `PASS` | `prisma validate`, `prisma generate`, migration lokal, seed dua kali, dan verifikasi count lulus. |
+| `pnpm build`        | `PASS` | Lulus.                                                                                            |
 
 ## 12. Keputusan dan Risiko Tersisa
 
