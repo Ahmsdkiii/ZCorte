@@ -28,6 +28,9 @@ export function ProductDetailView({ product }: { product: Product }) {
     isFullscreen,
     errorMessage,
     galleryImages,
+    currentStock,
+    stockStatus,
+    isAddToCartDisabled,
     handleSelectColor,
     handleSelectSize,
     handleAddToBag,
@@ -41,23 +44,27 @@ export function ProductDetailView({ product }: { product: Product }) {
 
   return (
     <div className="w-full" data-collection={product.collection}>
+      {/* Breadcrumb Navigation */}
       <nav
         aria-label="Breadcrumb"
         className="mb-[26px] flex flex-wrap items-center gap-2 text-[8px] leading-[1.8] tracking-[0.06em] text-muted uppercase md:text-[9px]"
       >
-        <Link href="/" className="hover:text-ink">
-          APEX
+        <Link href="/" className="hover:text-ink transition-colors">
+          ZCORTÉ
         </Link>
         <span>/</span>
-        <Link href="/shop" className="hover:text-ink">
+        <Link href="/shop" className="hover:text-ink transition-colors">
           SHOP
         </Link>
         <span>/</span>
-        <Link href={`/collections/${product.collection}`} className="hover:text-ink">
+        <Link
+          href={`/shop?collection=${product.collection}`}
+          className="hover:text-ink transition-colors"
+        >
           {product.collection}
         </Link>
         <span>/</span>
-        <span className="text-ink">{product.name}</span>
+        <span className="text-ink font-medium">{product.name}</span>
       </nav>
 
       <div className="grid grid-cols-1 items-start gap-[30px] md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-[clamp(32px,6vw,100px)]">
@@ -81,6 +88,9 @@ export function ProductDetailView({ product }: { product: Product }) {
             availableSizes={availableSizes}
             oneSize={oneSize}
             quantity={quantity}
+            currentStock={currentStock}
+            stockStatus={stockStatus}
+            isAddToCartDisabled={isAddToCartDisabled}
             errorMessage={errorMessage}
             onSelectColor={handleSelectColor}
             onSelectSize={handleSelectSize}

@@ -24,6 +24,8 @@ export interface ProductColorVariant {
     back: string;
   };
   unavailableSizes?: ProductSize[];
+  stockBySize?: Partial<Record<ProductSize, number>>;
+  stockOneSize?: number;
 }
 
 export interface ProductSpecification {

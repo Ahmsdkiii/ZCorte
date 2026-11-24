@@ -10,7 +10,13 @@ const MATERIALS_NOTE =
 
 function colorways(
   slug: string,
-  ext: { graphite?: string; olive?: string; oliveBack?: string } = {}
+  ext: { graphite?: string; olive?: string; oliveBack?: string } = {},
+  stock: {
+    graphiteStock?: Partial<Record<ProductSize, number>>;
+    oliveStock?: Partial<Record<ProductSize, number>>;
+    graphiteOneSize?: number;
+    oliveOneSize?: number;
+  } = {}
 ): ProductColorVariant[] {
   const g = ext.graphite ?? "webp";
   const o = ext.olive ?? "webp";
@@ -23,6 +29,8 @@ function colorways(
         front: `${IMG}/${slug}-graphite-front.${g}`,
         back: `${IMG}/${slug}-graphite-back.${g}`,
       },
+      stockBySize: stock.graphiteStock ?? { S: 12, M: 8, L: 4, XL: 2 },
+      stockOneSize: stock.graphiteOneSize ?? 15,
     },
     {
       id: "olive",
@@ -33,6 +41,8 @@ function colorways(
         back: `${IMG}/${slug}-olive-back.${ext.oliveBack ?? o}`,
       },
       unavailableSizes: ["XL"],
+      stockBySize: stock.oliveStock ?? { S: 5, M: 2, L: 0, XL: 0 },
+      stockOneSize: stock.oliveOneSize ?? 3,
     },
   ];
 }
