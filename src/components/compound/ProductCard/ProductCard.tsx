@@ -91,9 +91,11 @@ export function ProductCardImage({
         <span className="border-l-2 border-l-[var(--accent)] bg-surface-raised/90 px-2 py-1 text-[8px] font-medium tracking-[0.14em] text-ink uppercase backdrop-blur-xs">
           {COLLECTION_LABELS[product.collection]}
         </span>
-        <span className="bg-surface-raised/80 px-2 py-1 text-[7px] tracking-[0.12em] text-muted uppercase backdrop-blur-xs">
-          CONCEPT
-        </span>
+        {product.isConcept && (
+          <span className="bg-surface-raised/80 px-2 py-1 text-[7px] tracking-[0.12em] text-muted uppercase backdrop-blur-xs">
+            CONCEPT
+          </span>
+        )}
       </div>
     </>
   );
