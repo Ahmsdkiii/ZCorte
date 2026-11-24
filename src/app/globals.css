@@ -49,15 +49,20 @@
   --color-cinematic-raised: #171a1b;
   --color-cinematic-text: #f7f7f4;
   --color-cinematic-muted: #c9ccca;
+  --color-cinematic-border: #383a3e;
   --color-accent-tactix: #777d63;
   --color-accent-apextive: #6e7872;
   --color-accent-outdoor: #8ca4b0;
   --color-swatch-graphite: #343939;
   --color-swatch-olive: #676b4c;
+  --color-status-error: #991b1b;
+  --color-status-success: #166534;
+  --color-status-warning: #854d0e;
 
   --breakpoint-3xl: 100rem;
 
-  --ease-apex: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-zcorte: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-apex: var(--ease-zcorte);
 
   --animate-scroll-cue: scroll-cue 2s infinite;
   --animate-drawer-enter: drawer-enter 0.25s ease-out;
