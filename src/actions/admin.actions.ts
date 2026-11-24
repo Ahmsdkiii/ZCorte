@@ -29,7 +29,7 @@ export async function getAdminDashboardDataAction(): Promise<
   AdminActionResult<AdminDashboardDataDTO>
 > {
   try {
-    await requireOwner();
+    const session = await requireOwner();
 
     const [paidOrdersAggregate, pendingCount, orders, products] = await Promise.all([
       prisma.order.aggregate({
@@ -68,6 +68,10 @@ export async function getAdminDashboardDataAction(): Promise<
     const averageOrderValue = paidOrdersCount > 0 ? Math.round(totalRevenue / paidOrdersCount) : 0;
 
     const data: AdminDashboardDataDTO = {
+      owner: {
+        name: session.name || "ZCorté Owner",
+        email: session.email,
+      },
       kpi: {
         totalRevenue,
         paidOrdersCount,

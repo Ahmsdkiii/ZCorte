@@ -36,7 +36,13 @@ export interface AdminOrderDTO {
   createdAt: string;
 }
 
+export interface AdminOwnerDTO {
+  name: string;
+  email: string;
+}
+
 export interface AdminDashboardDataDTO {
+  owner: AdminOwnerDTO;
   kpi: AdminKpiDTO;
   products: AdminProductDTO[];
   orders: AdminOrderDTO[];
