@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Product, ProductColorId, ProductSize } from "@/models/types/product";
 import { useCart } from "@/components/providers/CartProvider";
-import { getAvailableSizes, isOneSize } from "@/lib/product";
+import {
+  getAvailableSizes,
+  getProductStock,
+  isOneSize,
+  StockStatus,
+  getStockStatus,
+} from "@/models/domain/productRules";
 
 export function useQuickAddViewModel() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -19,9 +25,12 @@ export function useQuickAddViewModel() {
       return;
     }
     const available = getAvailableSizes(product, colorId);
+    // Find first size that has stock > 0
+    const inStockSize = available.find((s) => getProductStock(product, colorId, s) > 0);
+
     setSelectedProduct(product);
     setSelectedColorId(colorId);
-    setSelectedSize(available[0] ?? null);
+    setSelectedSize(inStockSize ?? available[0] ?? null);
     setIsOpen(true);
   };
 
@@ -29,8 +38,9 @@ export function useQuickAddViewModel() {
     setSelectedColorId(colorId);
     if (selectedProduct) {
       const available = getAvailableSizes(selectedProduct, colorId);
+      const inStockSize = available.find((s) => getProductStock(selectedProduct, colorId, s) > 0);
       if (selectedSize && !available.includes(selectedSize)) {
-        setSelectedSize(available[0] ?? null);
+        setSelectedSize(inStockSize ?? available[0] ?? null);
       }
     }
   };
@@ -41,6 +51,19 @@ export function useQuickAddViewModel() {
     setSelectedSize(null);
   };
 
+  const currentStock = useMemo(() => {
+    if (!selectedProduct) return 0;
+    return getProductStock(
+      selectedProduct,
+      selectedColorId,
+      isOneSize(selectedProduct) ? null : selectedSize
+    );
+  }, [selectedProduct, selectedColorId, selectedSize]);
+
+  const stockStatus: StockStatus = useMemo(() => {
+    return getStockStatus(currentStock);
+  }, [currentStock]);
+
   const confirmAdd = () => {
     if (!selectedProduct) return;
     if (isOneSize(selectedProduct)) {
@@ -48,7 +71,7 @@ export function useQuickAddViewModel() {
       closeQuickAdd();
       return;
     }
-    if (selectedSize) {
+    if (selectedSize && currentStock > 0) {
       addItem(selectedProduct, selectedSize, 1, selectedColorId);
       closeQuickAdd();
     }
@@ -59,6 +82,8 @@ export function useQuickAddViewModel() {
     selectedColorId,
     selectedSize,
     isOpen,
+    currentStock,
+    stockStatus,
     setSelectedSize,
     handleSelectColor,
     openQuickAdd,
