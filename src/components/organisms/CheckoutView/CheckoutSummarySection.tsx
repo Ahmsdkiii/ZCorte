@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { CartItem } from "@/models/types/cart";
 import { QuantitySelector } from "@/components/molecules/QuantitySelector";
-import { getProductColor } from "@/lib/product";
+import { getProductColor } from "@/models/domain/productRules";
 import { formatIDR } from "@/lib/utils";
 
 export interface CheckoutSummarySectionProps {
@@ -27,6 +27,8 @@ export function CheckoutSummarySection({
   onUpdateQuantity,
   onRemoveItem,
 }: CheckoutSummarySectionProps) {
+  const totalQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
+
   return (
     <aside
       aria-label="Order summary"
@@ -35,21 +37,22 @@ export function CheckoutSummarySection({
       <div className="flex items-baseline justify-between border-b border-line pb-5">
         <div>
           <span className="eyebrow block text-muted">MANIFEST</span>
-          <h2 className="mt-1.5 text-[22px] tracking-[-0.03em] text-ink uppercase">
+          <h2 className="mt-1.5 text-[22px] font-bold tracking-[-0.03em] text-ink uppercase">
             ORDER SUMMARY
           </h2>
         </div>
-        <span className="text-xs font-medium text-muted">
-          {items.reduce((acc, item) => acc + item.quantity, 0)} ITEMS
+        <span className="text-xs font-semibold text-muted">
+          {totalQuantity} {totalQuantity === 1 ? "ITEM" : "ITEMS"}
         </span>
       </div>
 
-      <div className="divide-y divide-line">
+      <div className="divide-y divide-line" role="list" aria-label="Order items">
         {items.map((item) => {
           const color = getProductColor(item.product, item.colorId);
           return (
             <div
               key={item.id}
+              role="listitem"
               data-collection={item.product.collection}
               className="flex gap-4 py-5"
             >
@@ -64,12 +67,15 @@ export function CheckoutSummarySection({
               </div>
 
               <div className="min-w-0 flex-1">
-                <span className="eyebrow inline-block border-l-2 border-l-[var(--accent)] pl-1.5 text-[8px] text-muted">
+                <span className="eyebrow inline-block border-l-2 border-l-[var(--accent)] pl-1.5 text-[8px] text-muted uppercase">
                   {item.product.collection}
                 </span>
                 <div className="mt-1 flex items-baseline justify-between gap-2">
-                  <h3 className="truncate text-[15px] tracking-[-0.025em] text-ink uppercase">
-                    <Link href={`/shop/${item.product.slug}`} className="hover:underline">
+                  <h3 className="truncate text-[15px] font-bold tracking-[-0.025em] text-ink uppercase">
+                    <Link
+                      href={`/shop/${item.product.slug}`}
+                      className="hover:underline transition-colors"
+                    >
                       {item.product.name}
                     </Link>
                   </h3>
@@ -78,7 +84,7 @@ export function CheckoutSummarySection({
                   </span>
                 </div>
                 <p className="mt-1 text-[11px] text-muted">
-                  {color.name} &middot; {item.size ? `Size ${item.size}` : "One Size"}
+                  Color: {color.name} &middot; {item.size ? `Size ${item.size}` : "One Size"}
                 </p>
 
                 <div className="mt-3 flex items-center justify-between gap-3">
@@ -90,7 +96,7 @@ export function CheckoutSummarySection({
                   <button
                     type="button"
                     onClick={() => onRemoveItem(item.id)}
-                    className="cursor-pointer text-[9px] tracking-[0.08em] text-muted underline underline-offset-4 hover:text-ink"
+                    className="cursor-pointer text-[9px] tracking-[0.08em] text-muted underline underline-offset-4 hover:text-ink transition-colors"
                   >
                     REMOVE
                   </button>
@@ -104,30 +110,30 @@ export function CheckoutSummarySection({
       <div className="space-y-3 border-t border-line pt-5 text-xs">
         <div className="flex justify-between text-muted">
           <span>SUBTOTAL</span>
-          <span className="text-ink">{formatIDR(subtotal)}</span>
+          <span className="text-ink font-medium">{formatIDR(subtotal)}</span>
         </div>
         <div className="flex justify-between text-muted">
           <span>SHIPPING DISPATCH</span>
-          <span className="text-ink">
+          <span className="text-ink font-medium">
             {shippingCost === 0 ? "COMPLIMENTARY" : formatIDR(shippingCost)}
           </span>
         </div>
-        <div className="flex items-baseline justify-between border-t border-line pt-4 text-sm font-semibold text-ink">
-          <span>TOTAL (IDR)</span>
-          <span>{formatIDR(total)}</span>
+        <div className="flex items-baseline justify-between border-t border-line pt-4 text-sm font-bold text-ink">
+          <span>ESTIMATED TOTAL</span>
+          <span aria-live="polite">{formatIDR(total)}</span>
         </div>
       </div>
 
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="mt-6 flex min-h-[54px] w-full cursor-pointer items-center justify-center bg-button px-6 py-4 text-[11px] font-semibold tracking-[0.08em] text-button-text uppercase transition-colors hover:bg-button-hover disabled:opacity-60"
+        disabled={isSubmitting || items.length === 0}
+        className="mt-6 flex min-h-[54px] w-full cursor-pointer items-center justify-center bg-button px-6 py-4 text-[11px] font-semibold tracking-[0.08em] text-button-text uppercase transition-colors hover:bg-button-hover disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {isSubmitting ? "PROCESSING DISPATCH..." : `COMPLETE ORDER • ${formatIDR(total)}`}
+        {isSubmitting ? "PROCESSING DISPATCH..." : `CONFIRM ORDER • ${formatIDR(total)}`}
       </button>
 
-      <p className="mt-3 text-center text-[11px] leading-[1.6] text-muted">
-        Concept catalog &middot; Simulated checkout &middot; No real financial charge
+      <p className="mt-3 text-center text-[10px] leading-[1.6] text-muted">
+        ZCorté Small-Batch Production &middot; Crafted in Bandung, West Java
       </p>
     </aside>
   );

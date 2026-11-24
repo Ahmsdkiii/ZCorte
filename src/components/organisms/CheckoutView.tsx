@@ -35,15 +35,15 @@ export function CheckoutView() {
         aria-label="Breadcrumb"
         className="mb-7 flex flex-wrap items-center gap-2 text-[8px] leading-[1.8] tracking-[0.06em] text-muted uppercase md:text-[9px]"
       >
-        <Link href="/" className="hover:text-ink">
-          APEX
+        <Link href="/" className="hover:text-ink transition-colors">
+          ZCORTÉ
         </Link>
         <span>/</span>
-        <Link href="/shop" className="hover:text-ink">
+        <Link href="/shop" className="hover:text-ink transition-colors">
           SHOP
         </Link>
         <span>/</span>
-        <span className="text-ink">CHECKOUT</span>
+        <span className="text-ink font-medium">CHECKOUT</span>
       </nav>
 
       {submittedOrder ? (
@@ -53,10 +53,10 @@ export function CheckoutView() {
           aria-labelledby="empty-checkout-heading"
           className="border border-line bg-surface-raised px-6 py-16 text-center md:py-24"
         >
-          <p className="eyebrow text-muted">APEX / DISPATCH QUEUE</p>
+          <p className="eyebrow text-muted">ZCORTÉ / DISPATCH QUEUE</p>
           <h1
             id="empty-checkout-heading"
-            className="my-5 text-[clamp(32px,5vw,56px)] tracking-[-0.04em] text-ink uppercase"
+            className="my-5 text-[clamp(32px,5vw,56px)] font-bold tracking-[-0.04em] text-ink uppercase"
           >
             YOUR BAG IS EMPTY.
           </h1>
@@ -74,8 +74,8 @@ export function CheckoutView() {
       ) : (
         <>
           <div className="mb-10 border-b border-line pb-7 md:mb-12">
-            <span className="eyebrow block text-muted">APEX / EQUIPMENT DISPATCH</span>
-            <h1 className="mt-2.5 text-[clamp(34px,5.2vw,68px)] leading-[0.95] tracking-[-0.045em] text-ink uppercase">
+            <span className="eyebrow block text-muted">ZCORTÉ / ORDER DISPATCH</span>
+            <h1 className="mt-2.5 text-[clamp(34px,5.2vw,68px)] font-bold leading-[0.95] tracking-[-0.045em] text-ink uppercase">
               PROCEED TO CHECKOUT.
             </h1>
           </div>

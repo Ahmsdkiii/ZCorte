@@ -18,7 +18,7 @@ export const SHIPPING_METHODS: [ShippingMethodOption, ...ShippingMethodOption[]]
     label: "Standard Ground Dispatch",
     eta: "3–5 Business Days",
     price: 0,
-    description: "Complimentary tracked regional dispatch for all APEX equipment.",
+    description: "Complimentary tracked regional dispatch for all ZCorté apparel & equipment.",
   },
   {
     id: "express",
@@ -63,6 +63,9 @@ const INITIAL_FORM: CheckoutFormData = {
   notes: "",
 };
 
+const PHONE_REGEX = /^(\+62|62|0)8[0-9]{8,12}$/;
+const POSTAL_REGEX = /^\d{5}$/;
+
 export function useCheckoutViewModel() {
   const { items, subtotal, totalCount, updateQuantity, removeItem, clearCart } = useCartViewModel();
 
@@ -91,26 +94,44 @@ export function useCheckoutViewModel() {
   const validate = (): boolean => {
     const nextErrors: CheckoutFormErrors = {};
 
-    if (!form.email.trim() || !form.email.includes("@")) {
-      nextErrors.email = "Enter a valid email address for dispatch updates.";
+    const cleanEmail = form.email.trim();
+    if (!cleanEmail || !cleanEmail.includes("@") || cleanEmail.length < 5) {
+      nextErrors.email = "Enter a valid email address for order notifications.";
     }
+
     if (!form.firstName.trim()) {
       nextErrors.firstName = "First name is required.";
     }
+
     if (!form.lastName.trim()) {
       nextErrors.lastName = "Last name is required.";
     }
-    if (!form.phone.trim()) {
+
+    const cleanPhone = form.phone.trim().replace(/[\s-]/g, "");
+    if (!cleanPhone) {
       nextErrors.phone = "Phone number is required for courier coordination.";
+    } else if (!PHONE_REGEX.test(cleanPhone)) {
+      nextErrors.phone =
+        "Enter a valid Indonesian mobile number (e.g. +628123456789 or 08123456789).";
     }
+
     if (!form.address.trim()) {
       nextErrors.address = "Street address is required.";
     }
+
     if (!form.city.trim()) {
       nextErrors.city = "City is required.";
     }
-    if (!form.postalCode.trim()) {
+
+    if (!form.province.trim()) {
+      nextErrors.province = "Province is required.";
+    }
+
+    const cleanPostal = form.postalCode.trim();
+    if (!cleanPostal) {
       nextErrors.postalCode = "Postal code is required.";
+    } else if (!POSTAL_REGEX.test(cleanPostal)) {
+      nextErrors.postalCode = "Postal code must be exactly 5 digits.";
     }
 
     setErrors(nextErrors);
@@ -126,7 +147,7 @@ export function useCheckoutViewModel() {
 
     const randomCode = String(Math.floor(1000 + Math.random() * 9000));
     const orderSnapshot: SubmittedOrder = {
-      orderNumber: `APX-2611-${randomCode}`,
+      orderNumber: `ZCT-2611-${randomCode}`,
       createdAt: new Date().toLocaleDateString("en-ID", {
         year: "numeric",
         month: "short",
