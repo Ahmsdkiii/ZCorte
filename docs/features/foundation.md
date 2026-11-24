@@ -75,13 +75,14 @@ Tidak ada user flow langsung. Alur teknisnya: schema Prisma → migration → Po
 ```text
 Migration command → Prisma migration engine → PostgreSQL
                                       └────→ Prisma Client generation
+Service → `src/server/db/transaction.ts` → `src/server/db/prisma.ts` → PostgreSQL
 ```
 
 - Boundary dan validator: N/A.
-- Service/use case: N/A.
+- Service/use case: Service berikutnya mengimpor `prisma` dari `src/server/db/prisma.ts`.
 - Authorization: N/A.
-- Transaction boundary: Dikelola oleh migration engine saat menerapkan migration.
-- Idempotency/concurrency: Migration diberi nama dan checksum Prisma.
+- Transaction boundary: Service memiliki boundary; `withTransaction` meneruskan typed `Prisma.TransactionClient`.
+- Idempotency/concurrency: Migration diberi nama dan checksum Prisma; operasi bisnis berikutnya memakai transaction service.
 - Domain/audit event: N/A.
 
 ### 5.4 Data dan Migration
@@ -143,17 +144,19 @@ Tidak ada API atau Server Action pada subtask ini.
 - `prisma/seed.ts` — bootstrap demo idempotent untuk user dan katalog.
 - `.env.example` — placeholder password seed development.
 - `package.json`, `pnpm-lock.yaml` — dependency `bcryptjs`.
+- `src/server/db/prisma.ts` — Prisma Client singleton server-only.
+- `src/server/db/transaction.ts` — helper transaction typed.
 - `docs/features/foundation.md` — dokumentasi implementasi foundation.
 
 ## 11. Hasil Validasi
 
-| Pemeriksaan         | Hasil  | Catatan                                                                                           |
-| ------------------- | ------ | ------------------------------------------------------------------------------------------------- |
-| `pnpm lint`         | `PASS` | Lulus.                                                                                            |
-| `pnpm format:check` | `PASS` | Lulus.                                                                                            |
-| `pnpm typecheck`    | `PASS` | Lulus.                                                                                            |
-| Test relevan        | `PASS` | `prisma validate`, `prisma generate`, migration lokal, seed dua kali, dan verifikasi count lulus. |
-| `pnpm build`        | `PASS` | Lulus.                                                                                            |
+| Pemeriksaan         | Hasil  | Catatan                                                                                                             |
+| ------------------- | ------ | ------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`         | `PASS` | Lulus.                                                                                                              |
+| `pnpm format:check` | `PASS` | Lulus.                                                                                                              |
+| `pnpm typecheck`    | `PASS` | Lulus.                                                                                                              |
+| Test relevan        | `PASS` | `prisma validate`, `prisma generate`, migration lokal, seed dua kali, verifikasi count, dan helper DB terkompilasi. |
+| `pnpm build`        | `PASS` | Lulus.                                                                                                              |
 
 ## 12. Keputusan dan Risiko Tersisa
 
