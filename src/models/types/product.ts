@@ -1,5 +1,14 @@
 export type ProductCollection = "tactix" | "apextive" | "outdoor";
 
+export type ProductCategory = "tops" | "bottoms" | "outerwear" | "accessories";
+
+export const ALL_CATEGORIES: readonly ProductCategory[] = [
+  "tops",
+  "bottoms",
+  "outerwear",
+  "accessories",
+];
+
 export type ProductSize = "S" | "M" | "L" | "XL";
 
 export const ALL_SIZES: readonly ProductSize[] = ["S", "M", "L", "XL"];
@@ -29,6 +38,7 @@ export interface Product {
   slug: string;
   name: string;
   collection: ProductCollection;
+  category: ProductCategory;
   price: number;
   featured: boolean;
   description: string;

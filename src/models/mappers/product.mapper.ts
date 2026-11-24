@@ -1,5 +1,6 @@
 import {
   Product,
+  ProductCategory,
   ProductCollection,
   ProductColorId,
   ProductColorVariant,
@@ -28,6 +29,7 @@ export interface ProductDto {
   slug: string;
   name: string;
   collection: ProductCollection;
+  category?: ProductCategory;
   price: number;
   featured: boolean;
   description: string;
@@ -73,13 +75,14 @@ export function mapProductDtoToDomain(dto: ProductDto): Product {
     slug: dto.slug,
     name: dto.name,
     collection: dto.collection,
+    category: dto.category ?? "outerwear",
     price: dto.price,
     featured: dto.featured,
     description: dto.description,
     sizes: dto.sizes,
     colors: dto.colors.map(mapProductColorDtoToDomain),
     contextImages: dto.contextImages ?? dto.context_images ?? [],
-    isConcept: dto.isConcept ?? dto.is_concept ?? true,
+    isConcept: dto.isConcept ?? dto.is_concept ?? false,
     specifications: dto.specifications,
     relatedProductSlugs: dto.relatedProductSlugs ?? dto.related_product_slugs ?? [],
   };
