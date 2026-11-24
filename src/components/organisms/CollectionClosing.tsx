@@ -15,7 +15,7 @@ export function CollectionClosing({ collection, statement }: CollectionClosingPr
     >
       <div className="mx-auto grid max-w-[1440px] gap-8 lg:grid-cols-12 lg:items-end">
         <div className="lg:col-span-8">
-          <p className="eyebrow mb-4 text-[var(--accent)]">APEX / {collection}</p>
+          <p className="eyebrow mb-4 text-[var(--accent)]">ZCORTÉ / {collection.toUpperCase()}</p>
           <h2 className="max-w-4xl text-4xl font-bold uppercase leading-[0.98] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
             {statement}
           </h2>

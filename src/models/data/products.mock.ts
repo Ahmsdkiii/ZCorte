@@ -4,7 +4,7 @@ const IMG = "/images/products";
 const APPAREL_SIZES: ProductSize[] = ["S", "M", "L", "XL"];
 
 const CONCEPT_NOTE =
-  "A design study for the APEX system. Product names, imagery, prices, and variant availability are demonstration data, not an offer to sell.";
+  "A design study for the ZCorté system. Product names, imagery, prices, and variant availability are demonstration data, not an offer to sell.";
 const MATERIALS_NOTE =
   "Final materials, measurements, care instructions, and performance specifications will be provided with the approved catalog release.";
 
