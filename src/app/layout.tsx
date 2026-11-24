@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, Geist } from "next/font/google";
 import { SkipLink } from "@/components/atoms";
-import { Header } from "@/components/organisms/Header";
-import { Footer } from "@/components/organisms/Footer";
-import { CartDrawer } from "@/components/compound/CartDrawer";
 import { CartProvider } from "@/components/providers/CartProvider";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/constants";
 import "./globals.css";
@@ -54,12 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${archivo.variable} ${geist.variable}`} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col" suppressHydrationWarning>
         <SkipLink />
-        <CartProvider>
-          <Header />
-          <div className="flex flex-1 flex-col">{children}</div>
-          <Footer />
-          <CartDrawer />
-        </CartProvider>
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   );

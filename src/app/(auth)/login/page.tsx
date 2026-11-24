@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { AuthSplitLayout } from "@/components/organisms/Auth/AuthSplitLayout";
 import { LoginForm } from "@/components/organisms/Auth/LoginForm";
 import { buildPageMetadata } from "@/lib/metadata";
 import { generateBreadcrumbSchema } from "@/lib/jsonLd";
@@ -17,17 +18,21 @@ export default function LoginPage() {
   ]);
 
   return (
-    <main
-      id="main"
-      className="w-full flex-1 px-gutter pt-[calc(var(--header-height)+48px)] pb-[70px] md:pt-[calc(var(--header-height)+72px)] md:pb-[120px]"
-    >
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <Suspense fallback={<div className="min-h-[300px]" aria-hidden="true" />}>
-        <LoginForm />
-      </Suspense>
-    </main>
+      <AuthSplitLayout
+        image="/images/apex/campaign-main-1.jpeg"
+        imageAlt="ZCorté editorial campaign in a volcanic landscape"
+        eyebrow="ZCORTÉ / CLIENT ACCESS"
+        headline="Welcome back."
+      >
+        <Suspense fallback={<div className="min-h-[300px]" aria-hidden="true" />}>
+          <LoginForm />
+        </Suspense>
+      </AuthSplitLayout>
+    </>
   );
 }

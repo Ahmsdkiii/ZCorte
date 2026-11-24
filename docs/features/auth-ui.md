@@ -14,21 +14,27 @@
 
 ## 1. Masalah dan Outcome
 
-Sebelumnya storefront ZCorté belum memiliki halaman `/login` dan `/register` untuk otentikasi pembeli atau owner. Akses fitur akun, checkout resmi (`FR-007`), serta area owner `/admin` memerlukan kredensial login yang sah.
+Sebelumnya storefront ZCorté belum memiliki halaman `/login` dan `/register` untuk otentikasi pembeli atau owner. Akses fitur akun, checkout resmi (`FR-007`), serta area owner `/admin` memerlukan kredensial login yang sah. Selain itu, diperlukan desain khusus login dan register bertema editorial luxury 50/50 split-screen tanpa Header dan Footer storefront agar pengunjung dapat fokus sepenuhnya pada proses autentikasi.
 
 Outcome yang dicapai:
 
-1. Halaman `/login` (Sign In) bertema editorial ZCorté dengan input email, password, toggle visibility, dan helper tombol _"1-Click Demo Accounts"_ (Customer Demo & Owner Demo) untuk kenyamanan demonstrasi kompetisi.
-2. Halaman `/register` (Create Account) dengan validasi nama lengkap, email unik, nomor telepon Indonesia (`+62`/`08`), dan password minimal 10 karakter sesuai `FR-010`.
-3. Server Actions `loginAction`, `registerAction`, dan `logoutAction` pada `src/actions/auth.actions.ts` yang memverifikasi kredensial database PostgreSQL melalui Prisma dan `bcryptjs`.
-4. Cookie sesi HTTP-only aman (`zcorte_session`) dengan masa aktif 7 hari.
-5. Pemenuhan aturan Clean Code `NFR-06` (seluruh file berukuran ≤ 250 baris).
+1. **Isolasi Layout via Route Groups:** Storefront dipindahkan ke route group `(storefront)` dengan `Header`, `Footer`, dan `CartDrawer`. Halaman autentikasi dipindahkan ke route group `(auth)` dengan layout clean tanpa Header dan Footer.
+2. **50/50 Editorial Split Layout (`AuthSplitLayout`):**
+   - Kolom kiri (Desktop `md:block`): Visual fashion editorial beresolusi tinggi (`campaign-main-1.jpeg` untuk login, `campaign-outdoor-mist.jpeg` untuk register), dark gradient luxury overlay, ZCorté wordmark, editorial eyebrow, display headline, dan brand tagline.
+   - Kolom kanan: Navigasi cepat "← Back to store", form autentikasi berpusat secara ergonomis dan minimalis tanpa border kartu kaku.
+3. Halaman `/login` (Sign In) bertema editorial ZCorté dengan input email, password, toggle visibility, dan helper tombol _"1-Click Demo Accounts"_ (Customer Demo & Owner Demo) untuk kenyamanan demonstrasi kompetisi.
+4. Halaman `/register` (Create Account) dengan validasi nama lengkap, email unik, nomor telepon Indonesia (`+62`/`08`), dan password minimal 10 karakter sesuai `FR-010`.
+5. Server Actions `loginAction`, `registerAction`, dan `logoutAction` pada `src/actions/auth.actions.ts` yang memverifikasi kredensial database PostgreSQL melalui Prisma dan `bcryptjs`.
+6. Cookie sesi HTTP-only aman (`zcorte_session`) dengan masa aktif 7 hari.
+7. Pemenuhan aturan Clean Code `NFR-06` (seluruh file berukuran ≤ 250 baris).
 
 ## 2. Scope
 
 ### In Scope (Task Frontend #7 — `FR-010`)
 
-- Halaman `/login` (`src/app/login/page.tsx`) dan `/register` (`src/app/register/page.tsx`).
+- Route groups `(storefront)` dan `(auth)` untuk isolasi navigasi/layout.
+- Komponen `AuthSplitLayout.tsx` di `src/components/organisms/Auth/`.
+- Halaman `/login` (`src/app/(auth)/login/page.tsx`) dan `/register` (`src/app/(auth)/register/page.tsx`).
 - Organisms `LoginForm.tsx` dan `RegisterForm.tsx` di `src/components/organisms/Auth/`.
 - Hook interaksi `useAuthViewModel.ts` dengan penanganan `callbackUrl`, toggle visibility, dan quick fill demo credentials.
 - Server Action `auth.actions.ts` dan session management di `src/server/auth/session.ts`.

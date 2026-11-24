@@ -23,10 +23,10 @@ export function LoginForm() {
     "w-full border border-line bg-surface-raised px-4 py-3.5 text-xs text-ink placeholder:text-muted/70 transition-colors focus:border-ink focus:outline-none";
 
   return (
-    <div className="mx-auto w-full max-w-md border border-line bg-surface-raised p-6 md:p-10">
-      <div className="mb-8 border-b border-line pb-6 text-center">
+    <div className="w-full">
+      <div className="mb-8 border-b border-line pb-6">
         <span className="eyebrow block text-muted">ZCORTÉ / CLIENT ACCESS</span>
-        <h1 className="mt-2 text-[28px] font-bold tracking-[-0.03em] text-ink uppercase">
+        <h1 className="mt-3 text-[clamp(30px,3.4vw,40px)] font-bold tracking-[-0.035em] text-ink uppercase">
           SIGN IN
         </h1>
         <p className="mt-2 text-xs text-muted">

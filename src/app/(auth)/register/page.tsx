@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { AuthSplitLayout } from "@/components/organisms/Auth/AuthSplitLayout";
 import { RegisterForm } from "@/components/organisms/Auth/RegisterForm";
 import { buildPageMetadata } from "@/lib/metadata";
 import { generateBreadcrumbSchema } from "@/lib/jsonLd";
@@ -18,17 +19,21 @@ export default function RegisterPage() {
   ]);
 
   return (
-    <main
-      id="main"
-      className="w-full flex-1 px-gutter pt-[calc(var(--header-height)+48px)] pb-[70px] md:pt-[calc(var(--header-height)+72px)] md:pb-[120px]"
-    >
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <Suspense fallback={<div className="min-h-[300px]" aria-hidden="true" />}>
-        <RegisterForm />
-      </Suspense>
-    </main>
+      <AuthSplitLayout
+        image="/images/apex/campaign-outdoor-mist.jpeg"
+        imageAlt="ZCorté outdoor collection in alpine mist"
+        eyebrow="ZCORTÉ / MEMBERSHIP"
+        headline="The journey begins here."
+      >
+        <Suspense fallback={<div className="min-h-[300px]" aria-hidden="true" />}>
+          <RegisterForm />
+        </Suspense>
+      </AuthSplitLayout>
+    </>
   );
 }
