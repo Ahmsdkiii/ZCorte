@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Icon } from "@/components/atoms";
+import { HeaderSearch } from "@/components/organisms/HeaderSearch";
 import { useHeaderViewModel } from "@/hooks/useHeaderViewModel";
 import { NAV_ITEMS, SITE_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,11 @@ export function Header() {
       </nav>
 
       <div className="flex items-center gap-3.5 max-[359px]:gap-2 md:gap-[22px]">
+        {/* DESKTOP SEARCH */}
+        <div className="hidden md:block">
+          <HeaderSearch />
+        </div>
+
         <Link
           href="/shop"
           className={cn(
@@ -141,6 +147,10 @@ export function Header() {
           >
             <Icon name="close" size={24} />
           </button>
+        </div>
+
+        <div className="mb-6">
+          <HeaderSearch isMobile onSelectResult={closeMenu} />
         </div>
 
         <nav aria-label="Mobile links" className="my-6 mb-11 grid">

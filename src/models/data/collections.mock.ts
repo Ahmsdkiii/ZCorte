@@ -4,7 +4,7 @@ import { ProductCollection } from "../types/product";
 export const mockCollections: Record<ProductCollection, CollectionMeta> = {
   tactix: {
     id: "tactix",
-    name: "APEX TACTIX",
+    name: "ZCORTÉ TACTIX",
     tagline: "READY BY DESIGN.",
     focus: "Readiness & Modern Utility",
     description:
@@ -26,7 +26,7 @@ export const mockCollections: Record<ProductCollection, CollectionMeta> = {
   },
   outdoor: {
     id: "outdoor",
-    name: "APEX OUTDOOR",
+    name: "ZCORTÉ OUTDOOR",
     tagline: "MEET THE ELEMENTS.",
     focus: "Environment & Exploration",
     description:
