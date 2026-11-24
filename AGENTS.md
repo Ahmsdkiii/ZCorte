@@ -34,7 +34,7 @@ Jika kode bertentangan dengan PRD, jangan diam-diam mempertahankan perilaku lama
 
 Untuk setiap perubahan kode:
 
-0. Pastikan berada di branch fitur/fix yang sesuai (bukan `main`/`master`) dan periksa `docs/team/ownership.md` sebelum menyentuh modul milik lane lain atau file kontrak bersama.
+0. Pastikan berada di branch fitur/fix yang sesuai (dibuat dari `develop`, bukan `main`/`master` atau `develop` langsung) dan periksa `docs/team/ownership.md` sebelum menyentuh modul milik lane lain atau file kontrak bersama. Jika sedang berada di branch PR milik rekan untuk keperluan review/audit, lakukan pemeriksaan secara _read-only_ dan jangan mengedit langsung di branch rekan kecuali diminta eksplisit; terapkan perbaikan pasca-merge melalui branch `fix/*` di atas `develop`.
 1. Pahami tujuan, acceptance criteria, dan alur pengguna yang terpengaruh.
 2. Untuk fitur baru atau perubahan fitur, buat/perbarui `docs/features/<feature-slug>.md` dari template sebelum implementasi dan jaga tetap sinkron sampai selesai.
 3. Inspeksi file terkait, konfigurasi, dependency, serta PRD relevan sebelum mengubah kode.
@@ -361,5 +361,6 @@ Project ini dikerjakan oleh **3 developer** secara paralel setelah Foundation P1
 
 1. **Hormati batas lane:** Bekerjalah hanya pada branch fitur dan folder lane Anda; tag pemilik lane terkait jika terpaksa menyentuh modul lain.
 2. **Jangan ubah kontrak bersama di PR fitur:** Perubahan `prisma/schema.prisma`, `ErrorCode`/`ActionResult`, `AuthContext`, `env.ts`, atau design token wajib melalui PR terpisah berlabel `contract` setelah disepakati tim.
-3. **Patuhi protokol Prisma migration:** Satu PR maksimal satu migration baru, wajib rebase terhadap branch utama sebelum menjalankan `prisma migrate dev`, dan dilarang keras mengedit migration yang sudah di-merge.
+3. **Patuhi protokol Prisma migration:** Satu PR maksimal satu migration baru, wajib rebase terhadap `origin/develop` sebelum menjalankan `prisma migrate dev`, dan dilarang keras mengedit migration yang sudah di-merge (termasuk lewat `git stash apply`). Gunakan _forward migration_ baru untuk koreksi skema pasca-merge.
 4. **Gunakan registry slug resmi:** Selalu pakai slug pada `docs/features/README.md` agar tidak tercipta dua dokumen fitur untuk satu kebutuhan yang sama.
+5. **SOP Review Branch Rekan:** Saat me-review branch PR rekan, jangan mengedit atau meng-commit langsung di branch rekan tanpa izin, dan jangan me-merge PR di GitHub sebelum status check CI (`Quality Gate`) hijau. Perbaikan pasca-merge wajib dilakukan di branch `fix/*` yang dibuat dari `develop` terbaru.

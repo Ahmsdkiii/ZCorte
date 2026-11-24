@@ -35,6 +35,22 @@ Gunakan format `<type>(<scope>): <ringkasan> [FR-xxx]`:
 - **Target Branch PR:** Selalu arahkan base branch PR ke **`develop`** (bukan ke `master`/`main`).
 - **Strategi Merge:** Gunakan **Squash and merge** dan hapus branch setelah ter-merge. Jika ada konflik saat akan merge, lakukan `git fetch origin && git rebase origin/develop` di branch Anda, jalankan ulang cek, lalu push `--force-with-lease`.
 
+### 3.1 SOP Code Review & Perbaikan Pasca-Merge
+
+Agar proses review antaranggota tim (`SIDQI`, `DINO`, `KANEKA`) tidak menimbulkan konflik branch, _stash_ yang menimpa file lama, atau _checksum mismatch_ pada database:
+
+1. **Mode Review adalah Read-Only:**
+   Saat Anda melakukan `git checkout <branch-rekan>` untuk memeriksa atau mencoba PR rekan di lokal, **jangan mengedit atau meng-commit perubahan langsung di branch rekan** tanpa kesepakatan eksplisit.
+2. **Wajib Tunggu CI Hijau Sebelum Merge:**
+   Jangan menekan tombol **Merge pull request** di GitHub apabila status check GitHub Actions (`Quality Gate — Lint, Format, Typecheck & Build`) masih merah atau belum selesai berjalan.
+3. **Dua Jalur Resmi Jika Ditemukan Perbaikan saat Review:**
+   - **Jalur A (PR belum di-merge):** Tuliskan temuan pada komentar review GitHub PR, lalu biarkan pemilik PR yang memperbaiki dan me-push ke branch PR tersebut.
+   - **Jalur B (PR sudah telanjur di-merge ke `develop`):**
+     1. Pindah ke `develop` dan tarik hasil merge terbaru: `git checkout develop && git pull --rebase origin develop`.
+     2. Buat branch perbaikan baru dari `develop`: `git checkout -b fix/<nama-perbaikan>`.
+     3. Terapkan perbaikan di branch `fix/*` tersebut. **Penting:** jangan pernah menggunakan `git stash apply` yang memodifikasi file `prisma/migrations/<migration_lama>/migration.sql` yang sudah ter-merge; buat migration baru (_forward-fix_) jika ada koreksi skema SQL.
+     4. Jalankan `pnpm check && pnpm build`, lalu buka PR baru ke `develop`.
+
 ## 4. Aturan Kontrak Bersama (`contract` PR)
 
 File-file berikut adalah **kontrak bersama** yang memengaruhi seluruh tim:
@@ -71,6 +87,7 @@ File-file berikut adalah **kontrak bersama** yang memengaruhi seluruh tim:
 - [ ] Berada di branch fitur/fix/docs tersendiri (dibuat dari `develop`), bukan di `develop` atau `main`/`master`.
 - [ ] Base branch PR di GitHub diarahkan ke **`develop`**.
 - [ ] Dokumen fitur di `docs/features/<slug>.md` dibuat/diperbarui dan terdaftar di [docs/features/README.md](docs/features/README.md).
+- [ ] Jika menambah/mengubah Route Handler `src/app/api/**/route.ts`, file koleksi Postman/Apidog di [docs/api/zcorte.postman_collection.json](docs/api/zcorte.postman_collection.json) dan [docs/api/README.md](docs/api/README.md) sudah diperbarui.
 - [ ] `pnpm check` (`lint` + `format:check` + `typecheck`) dan `pnpm build` hijau di lokal.
 - [ ] Test yang relevan sudah ditambahkan dan dijalankan (tidak ada `any`, tidak ada mock runtime untuk data inti).
 - [ ] Jika menyentuh kontrak bersama, PR diberi label `contract` dan disetujui tim.

@@ -14,9 +14,9 @@ PostgreSQL adalah **satu-satunya sumber kebenaran** semua data inti ZCorté (pro
 > Script `pnpm db:migrate` dan `pnpm db:seed` mulai tersedia setelah **Foundation P1** selesai.
 
 ```bash
-# 1. Pastikan berada di atas commit terbaru branch utama
+# 1. Pastikan berada di atas commit terbaru branch integrasi develop
 git fetch origin
-git rebase origin/master # atau origin/main setelah rename
+git rebase origin/develop
 
 # 2. Edit prisma/schema.prisma
 
@@ -37,7 +37,8 @@ Konflik `prisma/migrations/` terjadi apabila dua developer membuat migration di 
 2. **Rebase Tepat Sebelum Generate Migration.**
    Jangan pernah menjalankan `prisma migrate dev` sebelum menarik migration terbaru dari branch utama.
 3. **Dilarang Mengedit atau Menghapus Migration yang Sudah Ter-Merge.**
-   Jika ada kesalahan pada migration yang sudah masuk branch utama, buat **migration baru (forward-fix)** untuk memperbaikinya.
+   Jika ada kesalahan pada migration yang sudah masuk ke `develop` (atau `main`/`master`), buat **migration baru (forward-fix)** untuk memperbaikinya.
+   > **Peringatan `git stash`:** Jika Anda menyimpan perubahan lokal dengan `git stash` sebelum menarik merge PR rekan, pastikan hasil `git stash apply` tidak memodifikasi file `migration.sql` yang sudah ter-merge (`git diff HEAD -- prisma/migrations/<migration_lama>` wajib kosong). Mengubah file `migration.sql` yang sudah pernah dijalankan rekan tim akan merusak _SHA-256 checksum_ Prisma di database lokal mereka.
 4. **Perubahan Schema Lintas Lane Wajib PR `contract`.**
    Bila PR Anda mengubah tabel/kolom yang dipakai lane lain (mis. `Order`, `ProductVariant`, `User`), diskusikan dan kirim sebagai PR kecil berlabel `contract` terlebih dahulu (lihat [docs/team/ownership.md](../team/ownership.md)).
 5. **Dokumentasikan Rollback/Backfill.**
@@ -51,9 +52,9 @@ Jika branch utama baru saja mendapat migration dari developer lain sementara PR 
 # 1. Hapus folder migration lokal Anda yang belum di-merge
 rm -rf prisma/migrations/<timestamp_migration_lokal_anda>
 
-# 2. Rebase ke branch utama terbaru agar mendapat migration resmi dari tim
+# 2. Rebase ke branch develop terbaru agar mendapat migration resmi dari tim
 git fetch origin
-git rebase origin/master # atau origin/main
+git rebase origin/develop
 
 # 3. Reset database dev lokal (HANYA DB LOKAL PRIBADI, jangan pernah DB staging/prod)
 pnpm prisma migrate reset --force

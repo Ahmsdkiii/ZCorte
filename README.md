@@ -11,31 +11,35 @@ Target saat ini adalah **Release 0 (R0 — Competition MVP)**: core e-commerce b
 ```bash
 git clone https://github.com/Ahmsdkiii/ZCorte.git zcorte
 cd zcorte
+git checkout develop
 corepack enable && pnpm install
 cp .env.example .env
 docker compose up -d db
+pnpm db:migrate && pnpm db:seed
 pnpm dev
 ```
 
 Buka [http://localhost:3000](http://localhost:3000).
 
-> **Status Foundation P1:** Script database (`pnpm db:migrate`, `pnpm db:seed`) dan schema Prisma ditambahkan pada fase **Foundation P1**. Setelah P1 ter-merge ke branch utama, jalankan `pnpm db:migrate && pnpm db:seed` sebelum `pnpm dev`. Detail konfigurasi `.env` dan opsi database cloud lihat [Panduan Setup Lokal](docs/guides/01-local-setup.md).
+> **Otomatisasi Prisma Client:** `pnpm install`, `pnpm typecheck`, dan `pnpm build` sudah otomatis menjalankan `prisma generate`, sehingga Anda tidak akan terkena error `Module '"@prisma/client"' has no exported member 'PrismaClient'`. Detail konfigurasi `.env` dan opsi database cloud lihat [Panduan Setup Lokal](docs/guides/01-local-setup.md).
 
 ## Daftar Script
 
 | Command                       | Fungsi                                                                 | Status            |
 | ----------------------------- | ---------------------------------------------------------------------- | ----------------- |
 | `pnpm dev`                    | Jalankan server development (`next dev --turbopack`)                   | Aktif             |
-| `pnpm build`                  | Build production (`next build`)                                        | Aktif             |
+| `pnpm build`                  | Generate Prisma Client + build production (`next build`)               | Aktif             |
 | `pnpm start`                  | Jalankan hasil build production                                        | Aktif             |
 | `pnpm lint`                   | Pemeriksaan ESLint (`@next/next` + `@typescript-eslint` + batas layer) | Aktif             |
 | `pnpm lint:fix`               | Perbaiki issue ESLint otomatis bila memungkinkan                       | Aktif             |
 | `pnpm format:check`           | Cek konsistensi format Prettier                                        | Aktif             |
 | `pnpm format:write`           | Format seluruh file dengan Prettier                                    | Aktif             |
-| `pnpm typecheck`              | Type-check TypeScript (`tsc --noEmit`)                                 | Aktif             |
+| `pnpm typecheck`              | Generate Prisma Client + type-check TypeScript (`tsc --noEmit`)        | Aktif             |
 | `pnpm check`                  | Gabungan `lint` + `format:check` + `typecheck`                         | Aktif             |
-| `pnpm db:migrate`             | Jalankan migrasi Prisma dev                                            | Ditambahkan di P1 |
-| `pnpm db:seed`                | Jalankan bootstrap seed idempoten ke DB                                | Ditambahkan di P1 |
+| `pnpm db:generate`            | Generate Prisma Client dari `prisma/schema.prisma`                     | Aktif             |
+| `pnpm db:migrate`             | Jalankan migrasi Prisma dev ke PostgreSQL                              | Aktif             |
+| `pnpm db:seed`                | Jalankan bootstrap seed idempoten ke PostgreSQL                        | Aktif             |
+| `pnpm db:studio`              | Buka GUI Prisma Studio untuk inspeksi tabel database                   | Aktif             |
 | `pnpm test` / `pnpm test:e2e` | Vitest (unit/integrasi) & Playwright (E2E/a11y)                        | Ditambahkan di P1 |
 | `pnpm jscpd` / `pnpm knip`    | Deteksi duplikasi (<= 3%) & dead code                                  | Ditambahkan di P1 |
 
@@ -48,6 +52,7 @@ Buka [http://localhost:3000](http://localhost:3000).
 | Membuat fitur dari FR sampai PR (lengkap dengan contoh kode)        | [docs/guides/02-feature-recipe.md](docs/guides/02-feature-recipe.md)       |
 | Mengubah `schema.prisma`, membuat migration, atau mengatasi konflik | [docs/guides/03-database-workflow.md](docs/guides/03-database-workflow.md) |
 | Menulis dan menjalankan unit, integration, & E2E test               | [docs/guides/04-testing-guide.md](docs/guides/04-testing-guide.md)         |
+| Menguji endpoint `/api/*` dengan Postman / Apidog / Thunder Client  | [docs/api/README.md](docs/api/README.md)                                   |
 | Bekerja bersama AI coding agent secara aman dan konsisten           | [docs/guides/05-ai-agent-guide.md](docs/guides/05-ai-agent-guide.md)       |
 | Pembagian 3 lane paralel, folder owner, & kontrak bersama           | [docs/team/ownership.md](docs/team/ownership.md)                           |
 | Aturan branch, commit, PR, review, & merge tim                      | [CONTRIBUTING.md](CONTRIBUTING.md)                                         |

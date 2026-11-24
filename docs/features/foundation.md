@@ -22,14 +22,15 @@ Aplikasi membutuhkan sumber kebenaran PostgreSQL untuk akun, katalog, bag, pesan
 
 - Prisma datasource PostgreSQL dan Prisma Client generator.
 - Model Auth.js, katalog, customer, order, inventory, notification, audit, dan infrastructure R0.
-- Enum, relation, unique constraint, index, dan constraint SQL yang diperlukan schema awal.
+- Enum, relation, unique constraint, composite FK `(productId, colorId)`, index, GIN trigram index, functional unique index `COALESCE("size", 'ONE_SIZE')`, dan `CHECK` constraint SQL pada schema awal.
 - Initial migration `foundation` pada database development lokal.
+- Seed/bootstrap idempoten (`prisma/seed.ts`) untuk user demo (`OWNER`, `CUSTOMER`), koleksi, kategori, produk, warna, gambar (`.webp`/`.jpeg` + `CONTEXT`), varian, `InventoryMovement(INITIAL)`, `SizeChart`, `ProductRelation`, `StoryStep`, dan `StoreSetting`.
+- Helper database server-only (`src/server/db/prisma.ts` dan `src/server/db/transaction.ts`).
 
 ### Out of Scope
 
-- Seed/bootstrap data terpisah dari schema migration.
-- Auth.js adapter dan guard.
-- Repository, service, action, dan API.
+- Auth.js adapter, session handler, dan guard (`P1-B`).
+- Repository, service, action, dan API fitur.
 - Data migration produksi atau backfill.
 
 ### 2.3 Kontrak Bersama yang Disentuh
@@ -162,4 +163,4 @@ Tidak ada API atau Server Action pada subtask ini.
 
 - Keputusan penting: semua uang memakai integer minor unit rupiah; data shipping address dan metadata memakai JSON; Auth.js model disiapkan sejak initial schema.
 - Trade-off: schema initial mencakup entitas R0 agar migration tidak terpecah lintas lane, meskipun sebagian model baru dipakai pada fitur berikutnya.
-- Risiko tersisa: functional unique index varian, `CHECK` constraints, trigram index, dan validasi JSON perlu diverifikasi pada SQL migration PostgreSQL; seed dan Prisma client helper belum termasuk subtask ini.
+- Risiko tersisa: integrasi Auth.js (`P1-B`) serta migrasi service layer katalog (`Lane A`) masih berada pada subtask/PR berikutnya.

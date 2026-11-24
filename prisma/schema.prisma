@@ -275,6 +275,7 @@ model ProductColor {
   images    ProductImage[]
   variants  ProductVariant[]
 
+  @@unique([id, productId])
   @@unique([productId, name])
   @@index([productId])
   @@map("product_colors")
@@ -302,7 +303,7 @@ model ProductVariant {
   stock              Int                 @default(0)
   lowStockThreshold  Int                 @default(5)
   product            Product             @relation(fields: [productId], references: [id], onDelete: Restrict)
-  color              ProductColor        @relation(fields: [colorId], references: [id], onDelete: Restrict)
+  color              ProductColor        @relation(fields: [colorId, productId], references: [id, productId], onDelete: Restrict)
   cartItems          CartItem[]
   orderItems         OrderItem[]
   inventoryMovements InventoryMovement[]

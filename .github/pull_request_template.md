@@ -20,6 +20,7 @@
 - [ ] `pnpm check` (`lint` + `format:check` + `typecheck`) hijau di lokal
 - [ ] `pnpm build` berhasil di lokal
 - [ ] `docs/features/<slug>.md` dan indeks di `docs/features/README.md` diperbarui
+- [ ] Jika menambah/mengubah endpoint `/api/**`: `docs/api/zcorte.postman_collection.json` dan `docs/api/README.md` sudah diperbarui
 - [ ] Tidak ada `any`, tidak ada mock/seed sebagai fallback runtime, tidak ada debug `console.log`
 - [ ] Jika menyentuh UI: sudah dicek di viewport 320–1440 px, navigasi keyboard, dan state loading/empty/error/success
 

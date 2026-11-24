@@ -1,0 +1,266 @@
+{
+  "info": {
+    "_postman_id": "a7f3c8e0-1122-4b99-8c00-zcorte000001",
+    "name": "ZCorté — R0 API Collection (Postman / Apidog)",
+    "description": "Koleksi resmi Route Handlers HTTP/JSON ZCorté (Next.js 16 App Router) sesuai prd/11-api-spec.md. Wajib diperbarui di dalam PR yang sama setiap kali endpoint src/app/api/**/route.ts ditambah atau diubah.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "orderNumber",
+      "value": "ZCT-2611-0001",
+      "type": "string"
+    },
+    {
+      "key": "variantId",
+      "value": "replace-with-variant-id-from-db",
+      "type": "string"
+    },
+    {
+      "key": "cronSecret",
+      "value": "replace-with-cron-secret",
+      "type": "string"
+    },
+    {
+      "key": "telegramWebhookSecret",
+      "value": "replace-with-telegram-webhook-secret",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Public & Storefront (Lane A)",
+      "item": [
+        {
+          "name": "Health Check & DB Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Mengecek status aplikasi dan koneksi PostgreSQL (prd/11-api-spec.md §Q.2)."
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/search?q=overshirt",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "overshirt",
+                  "description": "Kata kunci pencarian (2–60 karakter)"
+                }
+              ]
+            },
+            "description": "Saran pencarian produk aktif menggunakan ILIKE + pg_trgm (FR-004)."
+          }
+        },
+        {
+          "name": "Validate Guest Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{baseUrl}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"variantId\": \"{{variantId}}\",\n      \"quantity\": 2\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "validate"]
+            },
+            "description": "Revalidasi harga dan stok varian untuk guest bag dari PostgreSQL (FR-006)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Orders, Payment & Owner Analytics (Lane B)",
+      "item": [
+        {
+          "name": "Get Order Detail (Customer / Owner Session)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderNumber}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderNumber}}"]
+            },
+            "description": "Mengambil detail pesanan milik user yang sedang login (FR-009). Mengembalikan 404 jika milik user lain (anti-IDOR)."
+          }
+        },
+        {
+          "name": "Get Owner Sales Report Series",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/sales?from=2026-11-01&to=2026-11-30&granularity=day",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "reports", "sales"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-11-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-11-30"
+                },
+                {
+                  "key": "granularity",
+                  "value": "day"
+                }
+              ]
+            },
+            "description": "Deret waktu penjualan untuk grafik dashboard Owner (FR-020, membutuhkan sesi OWNER)."
+          }
+        },
+        {
+          "name": "Payment Webhook Callback (R1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Webhook-Signature",
+                "value": "replace-with-provider-signature"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerRef\": \"SIM-PAY-0001\",\n  \"orderNumber\": \"{{orderNumber}}\",\n  \"status\": \"PAID\",\n  \"amount\": 1275000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "webhook"]
+            },
+            "description": "Callback payment gateway R1 dengan verifikasi signature dan idempotensi."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. AI Assistant, Telegram & Cron (Lane C)",
+      "item": [
+        {
+          "name": "AI Shopping Assistant Chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{baseUrl}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"demo-session-01\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Recommend a waterproof outer jacket for hiking\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ai/chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ai", "chat"]
+            },
+            "description": "Endpoint chat AI Shopping Assistant (ScriptedAssistant di R0 / AI Provider di R1) sesuai FR-030."
+          }
+        },
+        {
+          "name": "Cron — Expire Due Orders",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{cronSecret}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cron/expire-orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cron", "expire-orders"]
+            },
+            "description": "Menjalankan expireDueOrders() secara idempoten untuk pesanan PENDING_PAYMENT yang melewati expiresAt (FR-007)."
+          }
+        },
+        {
+          "name": "Cron — Daily Scheduled Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{cronSecret}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cron/daily",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cron", "daily"]
+            },
+            "description": "Memicu pengiriman laporan harian terjadwal dengan deduplication key (FR-043)."
+          }
+        },
+        {
+          "name": "Telegram Bot Webhook (R1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Telegram-Bot-Api-Secret-Token",
+                "value": "{{telegramWebhookSecret}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"update_id\": 10001,\n  \"message\": {\n    \"message_id\": 1,\n    \"date\": 1763950000,\n    \"chat\": {\n      \"id\": 123456789,\n      \"type\": \"private\"\n    },\n    \"from\": {\n      \"id\": 123456789,\n      \"is_bot\": false,\n      \"first_name\": \"Owner\"\n    },\n    \"text\": \"/sales_today\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/telegram/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "telegram", "webhook"]
+            },
+            "description": "Webhook Telegram Bot R1 dengan verifikasi header X-Telegram-Bot-Api-Secret-Token (FR-040/041)."
+          }
+        }
+      ]
+    }
+  ]
+}
+

@@ -26,13 +26,14 @@ docker compose up -d db-test
 
 ## 3. Matriks "Ubah Apa → Wajib Uji Apa"
 
-| Jenis Perubahan                                                              | Pengujian Minimum yang Wajib Ditambahkan/Dijalankan                                                                                      |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Ubah rule domain (`src/models/domain/`) atau validator (`src/validators/`)   | Unit test happy path + boundary + invalid input                                                                                          |
-| Ubah Server Action, Service, atau Repository (`src/actions/`, `src/server/`) | Integration test terhadap `db-test` mencakup happy path, otorisasi ditolak (401/403/404 IDOR), konflik stok/state (409), dan idempotensi |
-| Ubah skema database (`prisma/schema.prisma`)                                 | Verifikasi migration pada DB bersih + test constraint/race condition                                                                     |
-| Ubah UI/ViewModel (`src/components/`, `src/hooks/`, `src/app/`)              | State loading/empty/error/success, navigasi keyboard, responsive 320–1440 px, dan E2E flow terkait bila memengaruhi alur utama           |
-| Perbaikan bug                                                                | Regression test yang gagal sebelum perbaikan dan lulus setelah perbaikan                                                                 |
+| Jenis Perubahan                                                              | Pengujian Minimum yang Wajib Ditambahkan/Dijalankan                                                                                                                      |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Ubah rule domain (`src/models/domain/`) atau validator (`src/validators/`)   | Unit test happy path + boundary + invalid input                                                                                                                          |
+| Ubah Server Action, Service, atau Repository (`src/actions/`, `src/server/`) | Integration test terhadap `db-test` mencakup happy path, otorisasi ditolak (401/403/404 IDOR), konflik stok/state (409), dan idempotensi                                 |
+| Tambah/ubah HTTP Route Handler (`src/app/api/**/route.ts`)                   | Integration test endpoint + **wajib perbarui** [docs/api/zcorte.postman_collection.json](../api/zcorte.postman_collection.json) & [docs/api/README.md](../api/README.md) |
+| Ubah skema database (`prisma/schema.prisma`)                                 | Verifikasi migration pada DB bersih + test constraint/race condition                                                                                                     |
+| Ubah UI/ViewModel (`src/components/`, `src/hooks/`, `src/app/`)              | State loading/empty/error/success, navigasi keyboard, responsive 320–1440 px, dan E2E flow terkait bila memengaruhi alur utama                                           |
+| Perbaikan bug                                                                | Regression test yang gagal sebelum perbaikan dan lulus setelah perbaikan                                                                                                 |
 
 ## 4. Kepemilikan Test per Lane
 

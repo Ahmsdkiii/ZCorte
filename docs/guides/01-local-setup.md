@@ -52,14 +52,14 @@ Panduan ini memastikan ketiga laptop anggota tim memakai environment yang konsis
 
    Pastikan status container `zcorte-db` adalah `healthy`.
 
-5. **(Setelah Foundation P1 ter-merge) Jalankan migration & seed:**
+5. **Jalankan migration & seed database:**
 
    ```bash
    pnpm db:migrate
    pnpm db:seed
    ```
 
-   > Pada commit pra-P1 saat ini, script `db:migrate` dan `db:seed` belum ada dan baru ditambahkan saat Foundation P1 selesai.
+   > Catatan: `pnpm install`, `pnpm typecheck`, dan `pnpm build` sudah otomatis menjalankan `prisma generate`. Jika file `.env` lama Anda belum memiliki `SEED_OWNER_PASSWORD` / `SEED_CUSTOMER_PASSWORD`, `pnpm db:seed` di mode development otomatis memakai password demo default (`OwnerDemoPassword123!` untuk `owner@zcorte.local` dan `CustomerDemoPassword123!` untuk `customer@zcorte.local`).
 
 6. **Jalankan server development dan cek kualitas:**
 
@@ -69,6 +69,45 @@ Panduan ini memastikan ketiga laptop anggota tim memakai environment yang konsis
    ```
 
    Aplikasi dapat diakses di [http://localhost:3000](http://localhost:3000).
+
+### 2.1 Melihat & Mengelola Database (Prisma Studio, DBeaver, atau pgAdmin)
+
+Anda memiliki **3 cara** untuk membuka dan mengecek isi tabel PostgreSQL:
+
+#### Opsi A — Prisma Studio (Bawaan Repo, Tanpa Install Aplikasi Tambahan)
+
+Cukup jalankan di terminal:
+
+```bash
+pnpm db:studio
+```
+
+Browser akan otomatis membuka GUI tabel database di `http://localhost:5555`.
+
+#### Opsi B — Menghubungkan DBeaver / pgAdmin 4 ke PostgreSQL Docker
+
+Jika database dijalankan lewat `docker compose up -d db`, buka **DBeaver** atau **pgAdmin 4** → **New PostgreSQL Connection**, lalu isi parameter sesuai [docker-compose.yml](../../docker-compose.yml):
+
+| Parameter    | Nilai DB Development (`db`) | Nilai DB Test (`db-test`) |
+| ------------ | --------------------------- | ------------------------- |
+| **Host**     | `localhost`                 | `localhost`               |
+| **Port**     | `5432`                      | `5433`                    |
+| **Database** | `zcorte_dev`                | `zcorte_test`             |
+| **Username** | `zcorte`                    | `zcorte`                  |
+| **Password** | `zcorte_dev_password`       | `zcorte_test_password`    |
+
+#### Opsi C — Memakai PostgreSQL Native (Tanpa Docker) lewat pgAdmin / DBeaver
+
+Jika Anda sudah menginstal PostgreSQL langsung di OS (Windows/Linux/macOS) dan tidak memakai Docker:
+
+1. Buka **pgAdmin 4** atau **DBeaver**, lalu buat database kosong baru bernama **`zcorte_dev`** (atau jalankan `CREATE DATABASE zcorte_dev;`).
+2. Buka file `.env` Anda, lalu sesuaikan `DATABASE_URL` dengan username dan password PostgreSQL lokal Anda (umumnya user `postgres`):
+
+   ```env
+   DATABASE_URL="postgresql://postgres:PASSWORD_POSTGRES_ANDA@localhost:5432/zcorte_dev?schema=public"
+   ```
+
+3. Jalankan `pnpm db:migrate && pnpm db:seed` — seluruh 24 tabel beserta ekstensi `pg_trgm` dan data awal akan langsung terbentuk di pgAdmin / DBeaver Anda.
 
 ## 3. Pengaturan VS Code
 
