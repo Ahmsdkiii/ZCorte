@@ -10,6 +10,7 @@ import {
   Plus,
   Minus,
   Maximize2,
+  User,
 } from "lucide-react";
 
 export type IconName =
@@ -22,7 +23,8 @@ export type IconName =
   | "chevron-right"
   | "plus"
   | "minus"
-  | "expand";
+  | "expand"
+  | "user";
 
 export interface IconProps extends React.SVGProps<SVGSVGElement> {
   name: IconName;
@@ -51,6 +53,8 @@ export function Icon({ name, size = 18, className, ...props }: IconProps) {
       return <Minus size={size} className={className} {...props} />;
     case "expand":
       return <Maximize2 size={size} className={className} {...props} />;
+    case "user":
+      return <User size={size} className={className} {...props} />;
     default:
       return null;
   }

@@ -139,9 +139,7 @@ export const AccountAddressesSection: FC<AccountAddressesSectionProps> = ({
             <div
               key={addr.id}
               className={`flex flex-col justify-between border p-5 transition-colors ${
-                addr.isDefault
-                  ? "border-black bg-surface-raised"
-                  : "border-line bg-surface"
+                addr.isDefault ? "border-black bg-surface-raised" : "border-line bg-surface"
               }`}
             >
               <div>
