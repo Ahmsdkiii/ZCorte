@@ -6,3 +6,4 @@ asset/
 next-env.d.ts
 APEX_Web-direction.pdf
 pnpm-lock.yaml
+.agent/skills/
