@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/server/db/prisma";
-import { getSession } from "@/server/auth/session";
+import { requireUser } from "@/server/auth/guards";
 import type { AccountActionResult } from "@/actions/account.actions";
 
 const PHONE_REGEX = /^(\+62|62|0)8[0-9]{8,12}$/;
@@ -18,7 +18,7 @@ export async function createAddressAction(data: {
   postalCode: string;
   isDefault?: boolean;
 }): Promise<AccountActionResult> {
-  const session = await getSession();
+  const session = await requireUser();
   if (!session) {
     return { success: false, error: "Authentication required" };
   }
@@ -41,20 +41,20 @@ export async function createAddressAction(data: {
 
   try {
     const count = await prisma.address.count({
-      where: { userId: session.id },
+      where: { userId: session.userId },
     });
     const shouldBeDefault = data.isDefault || count === 0;
 
     if (shouldBeDefault) {
       await prisma.address.updateMany({
-        where: { userId: session.id },
+        where: { userId: session.userId },
         data: { isDefault: false },
       });
     }
 
     await prisma.address.create({
       data: {
-        userId: session.id,
+        userId: session.userId,
         recipientName: data.recipientName.trim(),
         phone: data.phone.trim(),
         street: data.street.trim(),
@@ -75,7 +75,7 @@ export async function createAddressAction(data: {
 }
 
 export async function setDefaultAddressAction(addressId: string): Promise<AccountActionResult> {
-  const session = await getSession();
+  const session = await requireUser();
   if (!session) {
     return { success: false, error: "Authentication required" };
   }
@@ -84,13 +84,13 @@ export async function setDefaultAddressAction(addressId: string): Promise<Accoun
     const address = await prisma.address.findUnique({
       where: { id: addressId },
     });
-    if (!address || address.userId !== session.id) {
+    if (!address || address.userId !== session.userId) {
       return { success: false, error: "Address not found or unauthorized" };
     }
 
     await prisma.$transaction([
       prisma.address.updateMany({
-        where: { userId: session.id },
+        where: { userId: session.userId },
         data: { isDefault: false },
       }),
       prisma.address.update({
@@ -108,7 +108,7 @@ export async function setDefaultAddressAction(addressId: string): Promise<Accoun
 }
 
 export async function deleteAddressAction(addressId: string): Promise<AccountActionResult> {
-  const session = await getSession();
+  const session = await requireUser();
   if (!session) {
     return { success: false, error: "Authentication required" };
   }
@@ -117,7 +117,7 @@ export async function deleteAddressAction(addressId: string): Promise<AccountAct
     const address = await prisma.address.findUnique({
       where: { id: addressId },
     });
-    if (!address || address.userId !== session.id) {
+    if (!address || address.userId !== session.userId) {
       return { success: false, error: "Address not found or unauthorized" };
     }
 
@@ -127,7 +127,7 @@ export async function deleteAddressAction(addressId: string): Promise<AccountAct
 
     if (address.isDefault) {
       const remaining = await prisma.address.findFirst({
-        where: { userId: session.id },
+        where: { userId: session.userId },
         orderBy: { createdAt: "desc" },
       });
       if (remaining) {

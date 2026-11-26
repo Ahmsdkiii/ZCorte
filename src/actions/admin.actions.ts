@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { Role, OrderStatus, ProductStatus } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
-import { getSession } from "@/server/auth/session";
+import { requireRole } from "@/server/auth/guards";
 import type {
   AdminDashboardDataDTO,
   AdminOrderStatus,
@@ -18,11 +18,7 @@ export interface AdminActionResult<T = void> {
 }
 
 async function requireOwner() {
-  const session = await getSession();
-  if (!session || session.role !== Role.OWNER) {
-    throw new Error("Unauthorized. Owner role required.");
-  }
-  return session;
+  return requireRole(Role.OWNER);
 }
 
 export async function getAdminDashboardDataAction(): Promise<

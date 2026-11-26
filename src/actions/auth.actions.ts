@@ -1,9 +1,10 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import { AuthError } from "next-auth";
 import { Role } from "@prisma/client";
+import { signIn, signOut, auth } from "@/auth";
 import { prisma } from "@/server/db/prisma";
-import { createSession, destroySession, getSession } from "@/server/auth/session";
 
 export interface AuthActionResult {
   success: boolean;
@@ -43,42 +44,40 @@ export async function loginAction(formData: {
   }
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { email },
+    await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
     });
 
-    if (!user || !user.passwordHash) {
+    const session = await auth();
+    if (!session?.user?.id || !session.user.email || !session.user.role) {
       return {
         success: false,
         message: "Invalid email or password.",
       };
     }
-
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-      return {
-        success: false,
-        message: "Invalid email or password.",
-      };
-    }
-
-    const sessionUser = {
-      id: user.id,
-      email: user.email,
-      name: user.name ?? "ZCorté Member",
-      role: user.role,
-    };
-
-    await createSession(sessionUser);
 
     return {
       success: true,
-      user: sessionUser,
+      user: {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name ?? "ZCorté Member",
+        role: session.user.role,
+      },
     };
   } catch (error) {
+    if (error instanceof AuthError) {
+      return {
+        success: false,
+        message: "Invalid email or password.",
+      };
+    }
+
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Authentication error occurred.",
+      message: "Authentication error occurred.",
     };
   }
 }
@@ -153,18 +152,28 @@ export async function registerAction(formData: {
       },
     });
 
-    const sessionUser = {
-      id: newUser.id,
+    await signIn("credentials", {
       email: newUser.email,
-      name: newUser.name ?? name,
-      role: newUser.role,
-    };
+      password,
+      redirect: false,
+    });
 
-    await createSession(sessionUser);
+    const session = await auth();
+    if (!session?.user?.id || !session.user.email || !session.user.role) {
+      return {
+        success: false,
+        message: "Registration completed, but sign in failed.",
+      };
+    }
 
     return {
       success: true,
-      user: sessionUser,
+      user: {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name ?? name,
+        role: session.user.role,
+      },
     };
   } catch (error) {
     return {
@@ -175,9 +184,9 @@ export async function registerAction(formData: {
 }
 
 export async function logoutAction() {
-  await destroySession();
+  await signOut({ redirect: false });
 }
 
 export async function getCurrentUserAction() {
-  return getSession();
+  return auth();
 }
