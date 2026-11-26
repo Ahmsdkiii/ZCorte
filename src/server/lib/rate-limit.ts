@@ -9,16 +9,27 @@ import { buildRateLimitKey } from "@/server/lib/rate-limit-key";
 export const LOGIN_RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 } as const;
 export const REGISTER_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 } as const;
 
-export async function enforceAuthRateLimit(
+export async function assertAuthRateLimit(
   scope: "login" | "register",
   email: string
 ): Promise<void> {
-  const requestHeaders = await headers();
-  const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const ip = forwardedFor || requestHeaders.get("x-real-ip")?.trim() || "unknown";
+  const key = await getAuthRateLimitKey(scope, email);
   const policy = scope === "login" ? LOGIN_RATE_LIMIT : REGISTER_RATE_LIMIT;
-  const key = buildRateLimitKey(scope, email, ip);
+  const bucket = await prisma.rateLimitBucket.findUnique({ where: { key } });
 
+  if (!bucket) {
+    return;
+  }
+
+  const windowExpired = Date.now() - bucket.windowStart.getTime() >= policy.windowMs;
+  if (!windowExpired && bucket.count >= policy.limit) {
+    throw new AppError("RATE_LIMITED", "Too many attempts. Please try again later.");
+  }
+}
+
+export async function recordAuthFailure(scope: "login" | "register", email: string): Promise<void> {
+  const key = await getAuthRateLimitKey(scope, email);
+  const policy = scope === "login" ? LOGIN_RATE_LIMIT : REGISTER_RATE_LIMIT;
   const rows = await prisma.$queryRaw<{ count: number }[]>`
     INSERT INTO "rate_limit_buckets" ("key", "windowStart", "count", "updatedAt")
     VALUES (${key}, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP)
@@ -45,4 +56,19 @@ export async function enforceAuthRateLimit(
   if (count > policy.limit) {
     throw new AppError("RATE_LIMITED", "Too many attempts. Please try again later.");
   }
+}
+
+export async function resetAuthRateLimit(
+  scope: "login" | "register",
+  email: string
+): Promise<void> {
+  const key = await getAuthRateLimitKey(scope, email);
+  await prisma.rateLimitBucket.deleteMany({ where: { key } });
+}
+
+async function getAuthRateLimitKey(scope: "login" | "register", email: string): Promise<string> {
+  const requestHeaders = await headers();
+  const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const ip = forwardedFor || requestHeaders.get("x-real-ip")?.trim() || "unknown";
+  return buildRateLimitKey(scope, email, ip);
 }

@@ -6,7 +6,11 @@ import { Role } from "@prisma/client";
 import { signIn, signOut, auth } from "@/auth";
 import { prisma } from "@/server/db/prisma";
 import { isAppError } from "@/server/lib/errors";
-import { enforceAuthRateLimit } from "@/server/lib/rate-limit";
+import {
+  assertAuthRateLimit,
+  recordAuthFailure,
+  resetAuthRateLimit,
+} from "@/server/lib/rate-limit";
 
 export interface AuthActionResult {
   success: boolean;
@@ -46,7 +50,7 @@ export async function loginAction(formData: {
   }
 
   try {
-    await enforceAuthRateLimit("login", email);
+    await assertAuthRateLimit("login", email);
 
     const user = await prisma.user.findUnique({
       where: { email },
@@ -54,6 +58,7 @@ export async function loginAction(formData: {
     });
 
     if (!user?.passwordHash || !(await bcrypt.compare(password, user.passwordHash))) {
+      await recordAuthFailure("login", email);
       return {
         success: false,
         message: "Invalid email or password.",
@@ -65,6 +70,7 @@ export async function loginAction(formData: {
       password,
       redirect: false,
     });
+    await resetAuthRateLimit("login", email);
 
     return {
       success: true,
@@ -143,13 +149,14 @@ export async function registerAction(formData: {
   }
 
   try {
-    await enforceAuthRateLimit("register", email);
+    await assertAuthRateLimit("register", email);
 
     const existing = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existing) {
+      await recordAuthFailure("register", email);
       return {
         success: false,
         message: "An account with this email address already exists.",
