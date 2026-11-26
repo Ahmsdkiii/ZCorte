@@ -5,6 +5,8 @@ import { AuthError } from "next-auth";
 import { Role } from "@prisma/client";
 import { signIn, signOut, auth } from "@/auth";
 import { prisma } from "@/server/db/prisma";
+import { isAppError } from "@/server/lib/errors";
+import { enforceAuthRateLimit } from "@/server/lib/rate-limit";
 
 export interface AuthActionResult {
   success: boolean;
@@ -44,6 +46,7 @@ export async function loginAction(formData: {
   }
 
   try {
+    await enforceAuthRateLimit("login", email);
     await signIn("credentials", {
       email,
       password,
@@ -68,6 +71,13 @@ export async function loginAction(formData: {
       },
     };
   } catch (error) {
+    if (isAppError(error)) {
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+
     if (error instanceof AuthError) {
       return {
         success: false,
@@ -128,6 +138,8 @@ export async function registerAction(formData: {
   }
 
   try {
+    await enforceAuthRateLimit("register", email);
+
     const existing = await prisma.user.findUnique({
       where: { email },
     });
@@ -176,9 +188,16 @@ export async function registerAction(formData: {
       },
     };
   } catch (error) {
+    if (isAppError(error)) {
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Registration error occurred.",
+      message: "Registration error occurred.",
     };
   }
 }
