@@ -3,14 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { InventoryMovementType, OrderActorType, OrderStatus, PaymentStatus } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
-import { getSession } from "@/server/auth/session";
+import { requireUser } from "@/server/auth/guards";
 import type { OrderDetailActionResult } from "@/actions/order-detail.actions";
 
 export async function cancelMyOrderAction(params: {
   orderNumber: string;
   reason?: string;
 }): Promise<OrderDetailActionResult> {
-  const session = await getSession();
+  const session = await requireUser();
   if (!session) {
     return { success: false, error: "Authentication required." };
   }
@@ -25,7 +25,7 @@ export async function cancelMyOrderAction(params: {
         include: { items: true },
       });
 
-      if (!order || order.userId !== session.id) {
+      if (!order || order.userId !== session.userId) {
         throw new Error("Order not found.");
       }
 
@@ -52,7 +52,7 @@ export async function cancelMyOrderAction(params: {
           data: {
             variantId: item.variantId,
             orderId: order.id,
-            actorUserId: session.id,
+            actorUserId: session.userId,
             type: InventoryMovementType.RELEASE,
             delta: item.quantity,
             reason: `Customer cancelled order ${order.orderNumber}: ${reason}`,
@@ -70,7 +70,7 @@ export async function cancelMyOrderAction(params: {
           orderId: order.id,
           fromStatus: OrderStatus.PENDING_PAYMENT,
           toStatus: OrderStatus.CANCELLED,
-          actorUserId: session.id,
+          actorUserId: session.userId,
           actorType: OrderActorType.CUSTOMER,
           reason,
         },
@@ -90,7 +90,7 @@ export async function cancelMyOrderAction(params: {
 export async function simulateOrderPaymentAction(
   orderNumber: string
 ): Promise<OrderDetailActionResult> {
-  const session = await getSession();
+  const session = await requireUser();
   if (!session) {
     return { success: false, error: "Authentication required." };
   }
@@ -100,7 +100,7 @@ export async function simulateOrderPaymentAction(
   try {
     await prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({ where: { orderNumber: trimmed } });
-      if (!order || order.userId !== session.id) {
+      if (!order || order.userId !== session.userId) {
         throw new Error("Order not found.");
       }
       if (order.status !== OrderStatus.PENDING_PAYMENT) {
@@ -126,7 +126,7 @@ export async function simulateOrderPaymentAction(
           orderId: order.id,
           fromStatus: OrderStatus.PENDING_PAYMENT,
           toStatus: OrderStatus.PAID,
-          actorUserId: session.id,
+          actorUserId: session.userId,
           actorType: OrderActorType.CUSTOMER,
           reason: "Simulated settlement verified (R0 Demo)",
         },

@@ -1,9 +1,16 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import { AuthError } from "next-auth";
 import { Role } from "@prisma/client";
+import { signIn, signOut, auth } from "@/auth";
 import { prisma } from "@/server/db/prisma";
-import { createSession, destroySession, getSession } from "@/server/auth/session";
+import { isAppError } from "@/server/lib/errors";
+import {
+  assertAuthRateLimit,
+  recordAuthFailure,
+  resetAuthRateLimit,
+} from "@/server/lib/rate-limit";
 
 export interface AuthActionResult {
   success: boolean;
@@ -43,42 +50,55 @@ export async function loginAction(formData: {
   }
 
   try {
+    await assertAuthRateLimit("login", email);
+
     const user = await prisma.user.findUnique({
       where: { email },
+      select: { id: true, email: true, name: true, role: true, passwordHash: true },
     });
 
-    if (!user || !user.passwordHash) {
+    if (!user?.passwordHash || !(await bcrypt.compare(password, user.passwordHash))) {
+      await recordAuthFailure("login", email);
       return {
         success: false,
         message: "Invalid email or password.",
       };
     }
 
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-      return {
-        success: false,
-        message: "Invalid email or password.",
-      };
-    }
-
-    const sessionUser = {
-      id: user.id,
-      email: user.email,
-      name: user.name ?? "ZCorté Member",
-      role: user.role,
-    };
-
-    await createSession(sessionUser);
+    await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+    await resetAuthRateLimit("login", email);
 
     return {
       success: true,
-      user: sessionUser,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name ?? "ZCorté Member",
+        role: user.role,
+      },
     };
   } catch (error) {
+    if (isAppError(error)) {
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+
+    if (error instanceof AuthError) {
+      return {
+        success: false,
+        message: "Invalid email or password.",
+      };
+    }
+
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Authentication error occurred.",
+      message: "Authentication error occurred.",
     };
   }
 }
@@ -129,11 +149,14 @@ export async function registerAction(formData: {
   }
 
   try {
+    await assertAuthRateLimit("register", email);
+
     const existing = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existing) {
+      await recordAuthFailure("register", email);
       return {
         success: false,
         message: "An account with this email address already exists.",
@@ -153,31 +176,40 @@ export async function registerAction(formData: {
       },
     });
 
-    const sessionUser = {
-      id: newUser.id,
+    await signIn("credentials", {
       email: newUser.email,
-      name: newUser.name ?? name,
-      role: newUser.role,
-    };
-
-    await createSession(sessionUser);
+      password,
+      redirect: false,
+    });
 
     return {
       success: true,
-      user: sessionUser,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name ?? name,
+        role: newUser.role,
+      },
     };
   } catch (error) {
+    if (isAppError(error)) {
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Registration error occurred.",
+      message: "Registration error occurred.",
     };
   }
 }
 
 export async function logoutAction() {
-  await destroySession();
+  await signOut({ redirect: false });
 }
 
 export async function getCurrentUserAction() {
-  return getSession();
+  return auth();
 }

@@ -2,7 +2,7 @@
 
 import { Role } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
-import { getSession } from "@/server/auth/session";
+import { requireUser } from "@/server/auth/guards";
 import type {
   OrderDetailDTO,
   OrderDetailStatus,
@@ -35,7 +35,7 @@ function parseShippingAddress(raw: unknown): OrderShippingAddressDTO {
 export async function getOrderDetailAction(
   orderNumber: string
 ): Promise<OrderDetailActionResult<OrderDetailDTO>> {
-  const session = await getSession();
+  const session = await requireUser();
   if (!session) {
     return { success: false, error: "Authentication required." };
   }
@@ -71,7 +71,7 @@ export async function getOrderDetailAction(
     });
 
     // Anti-IDOR: Do not reveal existence of another user's order
-    if (!order || (order.userId !== session.id && session.role !== Role.OWNER)) {
+    if (!order || (order.userId !== session.userId && session.role !== Role.OWNER)) {
       return { success: false, error: "Order not found." };
     }
 

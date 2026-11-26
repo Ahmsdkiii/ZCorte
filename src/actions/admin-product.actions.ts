@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { Role, ProductStatus, ProductFit } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
-import { getSession } from "@/server/auth/session";
+import { requireRole } from "@/server/auth/guards";
 import type { AdminActionResult } from "@/actions/admin.actions";
 
 export async function adminCreateProductAction(params: {
@@ -16,7 +16,7 @@ export async function adminCreateProductAction(params: {
   fit: "SLIM" | "REGULAR" | "RELAXED";
   status: "ACTIVE" | "DRAFT";
 }): Promise<AdminActionResult> {
-  const session = await getSession();
+  const session = await requireRole(Role.OWNER);
   if (!session || session.role !== Role.OWNER) {
     return { success: false, error: "Unauthorized. Owner role required." };
   }

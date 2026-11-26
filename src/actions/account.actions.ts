@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/server/db/prisma";
-import { getSession } from "@/server/auth/session";
+import { requireUser } from "@/server/auth/guards";
 import type { CustomerAccountDataDTO } from "@/models/types/account";
 
 const PHONE_REGEX = /^(\+62|62|0)8[0-9]{8,12}$/;
@@ -15,14 +15,14 @@ export interface AccountActionResult<T = void> {
 }
 
 export async function getAccountDataAction(): Promise<AccountActionResult<CustomerAccountDataDTO>> {
-  const session = await getSession();
+  const session = await requireUser();
   if (!session) {
     return { success: false, error: "Authentication required" };
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: session.id },
+      where: { id: session.userId },
       include: {
         addresses: {
           orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
@@ -92,7 +92,7 @@ export async function updateProfileAction(formData: {
   phone?: string;
   personalizationOptIn?: boolean;
 }): Promise<AccountActionResult> {
-  const session = await getSession();
+  const session = await requireUser();
   if (!session) {
     return { success: false, error: "Authentication required" };
   }
@@ -110,7 +110,7 @@ export async function updateProfileAction(formData: {
 
   try {
     await prisma.user.update({
-      where: { id: session.id },
+      where: { id: session.userId },
       data: { name, phone, personalizationOptIn },
     });
     revalidatePath("/account");

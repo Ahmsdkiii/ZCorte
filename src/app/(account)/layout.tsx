@@ -1,14 +1,10 @@
-import { redirect } from "next/navigation";
-import { getSession } from "@/server/auth/session";
+import { requireUser } from "@/server/auth/guards";
 import { Header } from "@/components/organisms/Header";
 import { Footer } from "@/components/organisms/Footer";
 import { CartDrawer } from "@/components/compound/CartDrawer";
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
-  const session = await getSession();
-  if (!session) {
-    redirect("/login?callbackUrl=/account");
-  }
+  await requireUser();
 
   return (
     <>
