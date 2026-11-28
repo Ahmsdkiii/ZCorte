@@ -3,10 +3,11 @@ import Credentials from "next-auth/providers/credentials";
 import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
+import { env } from "@/config/env";
 import { prisma } from "@/server/db/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  secret: process.env.AUTH_SECRET,
+  secret: env.AUTH_SECRET,
   session: {
     strategy: "jwt",
     maxAge: 60 * 60 * 24 * 7,

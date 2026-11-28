@@ -3,6 +3,7 @@
 import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 import { Role } from "@prisma/client";
+import type { ActionResult } from "@/lib/action-result";
 import { signIn, signOut, auth } from "@/auth";
 import { prisma } from "@/server/db/prisma";
 import { isAppError } from "@/server/lib/errors";
@@ -12,40 +13,37 @@ import {
   resetAuthRateLimit,
 } from "@/server/lib/rate-limit";
 
-export interface AuthActionResult {
-  success: boolean;
-  message?: string;
-  fieldErrors?: Record<string, string>;
-  user?: {
-    id: string;
-    email: string;
-    name: string;
-    role: Role;
-  };
-}
+type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+};
 
 const PHONE_REGEX = /^(\+62|62|0)8[0-9]{8,12}$/;
 
 export async function loginAction(formData: {
   email: string;
   password: string;
-}): Promise<AuthActionResult> {
+}): Promise<ActionResult<AuthUser>> {
   const email = formData.email.trim().toLowerCase();
   const password = formData.password;
 
   if (!email || !email.includes("@")) {
     return {
-      success: false,
+      ok: false,
+      code: "VALIDATION_ERROR",
       message: "Please enter a valid email address.",
-      fieldErrors: { email: "Valid email is required." },
+      fieldErrors: { email: ["Valid email is required."] },
     };
   }
 
   if (!password) {
     return {
-      success: false,
+      ok: false,
+      code: "VALIDATION_ERROR",
       message: "Password is required.",
-      fieldErrors: { password: "Password is required." },
+      fieldErrors: { password: ["Password is required."] },
     };
   }
 
@@ -60,7 +58,8 @@ export async function loginAction(formData: {
     if (!user?.passwordHash || !(await bcrypt.compare(password, user.passwordHash))) {
       await recordAuthFailure("login", email);
       return {
-        success: false,
+        ok: false,
+        code: "UNAUTHENTICATED",
         message: "Invalid email or password.",
       };
     }
@@ -73,8 +72,8 @@ export async function loginAction(formData: {
     await resetAuthRateLimit("login", email);
 
     return {
-      success: true,
-      user: {
+      ok: true,
+      data: {
         id: user.id,
         email: user.email,
         name: user.name ?? "ZCorté Member",
@@ -84,20 +83,24 @@ export async function loginAction(formData: {
   } catch (error) {
     if (isAppError(error)) {
       return {
-        success: false,
+        ok: false,
+        code: error.code,
         message: error.message,
+        ...(error.fieldErrors ? { fieldErrors: error.fieldErrors } : {}),
       };
     }
 
     if (error instanceof AuthError) {
       return {
-        success: false,
+        ok: false,
+        code: "UNAUTHENTICATED",
         message: "Invalid email or password.",
       };
     }
 
     return {
-      success: false,
+      ok: false,
+      code: "INTERNAL_ERROR",
       message: "Authentication error occurred.",
     };
   }
@@ -109,7 +112,7 @@ export async function registerAction(formData: {
   phone: string;
   password: string;
   confirmPassword?: string;
-}): Promise<AuthActionResult> {
+}): Promise<ActionResult<AuthUser>> {
   const name = formData.name.trim();
   const email = formData.email.trim().toLowerCase();
   const phone = formData.phone.trim().replace(/[\s-]/g, "");
@@ -142,9 +145,12 @@ export async function registerAction(formData: {
 
   if (Object.keys(fieldErrors).length > 0) {
     return {
-      success: false,
+      ok: false,
+      code: "VALIDATION_ERROR",
       message: "Please correct the highlighted form errors.",
-      fieldErrors,
+      fieldErrors: Object.fromEntries(
+        Object.entries(fieldErrors).map(([key, message]) => [key, [message]])
+      ),
     };
   }
 
@@ -158,9 +164,10 @@ export async function registerAction(formData: {
     if (existing) {
       await recordAuthFailure("register", email);
       return {
-        success: false,
+        ok: false,
+        code: "CONFLICT",
         message: "An account with this email address already exists.",
-        fieldErrors: { email: "Email is already registered." },
+        fieldErrors: { email: ["Email is already registered."] },
       };
     }
 
@@ -183,8 +190,8 @@ export async function registerAction(formData: {
     });
 
     return {
-      success: true,
-      user: {
+      ok: true,
+      data: {
         id: newUser.id,
         email: newUser.email,
         name: newUser.name ?? name,
@@ -194,13 +201,16 @@ export async function registerAction(formData: {
   } catch (error) {
     if (isAppError(error)) {
       return {
-        success: false,
+        ok: false,
+        code: error.code,
         message: error.message,
+        ...(error.fieldErrors ? { fieldErrors: error.fieldErrors } : {}),
       };
     }
 
     return {
-      success: false,
+      ok: false,
+      code: "INTERNAL_ERROR",
       message: "Registration error occurred.",
     };
   }
