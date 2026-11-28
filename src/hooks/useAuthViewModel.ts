@@ -64,16 +64,21 @@ export function useAuthViewModel(mode: "login" | "register") {
             password: form.password,
           });
 
-          if (!res.success) {
-            setErrorMessage(res.message ?? "Authentication failed.");
-            if (res.fieldErrors) setFieldErrors(res.fieldErrors);
+          if (!res.ok) {
+            setErrorMessage(res.message);
+            if (res.fieldErrors) {
+              setFieldErrors(
+                Object.fromEntries(
+                  Object.entries(res.fieldErrors).map(([key, messages]) => [key, messages[0] ?? ""])
+                )
+              );
+            }
             setIsSubmitting(false);
             return;
           }
 
-          // If owner login and no specific callbackUrl, redirect to /admin
           const destination =
-            res.user?.role === "OWNER" && callbackUrl === "/" ? "/admin" : callbackUrl;
+            res.data.role === "OWNER" && callbackUrl === "/" ? "/admin" : callbackUrl;
           router.push(destination);
           router.refresh();
         } else {
@@ -85,9 +90,15 @@ export function useAuthViewModel(mode: "login" | "register") {
             confirmPassword: form.confirmPassword,
           });
 
-          if (!res.success) {
-            setErrorMessage(res.message ?? "Registration failed.");
-            if (res.fieldErrors) setFieldErrors(res.fieldErrors);
+          if (!res.ok) {
+            setErrorMessage(res.message);
+            if (res.fieldErrors) {
+              setFieldErrors(
+                Object.fromEntries(
+                  Object.entries(res.fieldErrors).map(([key, messages]) => [key, messages[0] ?? ""])
+                )
+              );
+            }
             setIsSubmitting(false);
             return;
           }

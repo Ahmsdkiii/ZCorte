@@ -10,7 +10,7 @@
 | Branch / PR      | `contract/foundation-prisma`                             |
 | Referensi PRD/FR | `prd/10-database.md`, `prd/16-roadmap-risk.md`, `FR-010` |
 | Dibuat           | `2026-11-24`                                             |
-| Diperbarui       | `2026-11-24`                                             |
+| Diperbarui       | `2026-11-28`                                             |
 
 ## 1. Masalah dan Outcome
 
@@ -37,9 +37,9 @@ Aplikasi membutuhkan sumber kebenaran PostgreSQL untuk akun, katalog, bag, pesan
 
 - [ ] Tidak ada kontrak bersama yang berubah
 - [x] `prisma/schema.prisma` (membutuhkan migration — lihat `docs/guides/03-database-workflow.md`)
-- [ ] `ErrorCode` / `ActionResult` (`src/server/lib/errors.ts`, `src/lib/action-result.ts`)
-- [ ] `AuthContext` / guard peran (`src/server/auth/*`)
-- [ ] Environment variables (`src/config/env.ts`, `.env.example`)
+- [x] `ErrorCode` / `ActionResult` (`src/server/lib/errors.ts`, `src/lib/action-result.ts`)
+- [x] `AuthContext` / guard peran (`src/server/auth/*`)
+- [x] Environment variables (`src/config/env.ts`, `.env.example`)
 - [ ] Design tokens (`src/app/globals.css`) atau komponen lintas lane (`ProductCard`, `DataTable`, dll.)
 
 ## 3. User Story dan Acceptance Criteria
@@ -147,6 +147,10 @@ Tidak ada API atau Server Action pada subtask ini.
 - `package.json`, `pnpm-lock.yaml` — dependency `bcryptjs`.
 - `src/server/db/prisma.ts` — Prisma Client singleton server-only.
 - `src/server/db/transaction.ts` — helper transaction typed.
+- `src/lib/action-result.ts` — kontrak `ActionResult<T>` dan katalog `ErrorCode`.
+- `src/server/lib/errors.ts` — `AppError`, status mapping, dan sanitasi error.
+- `src/config/env.ts` — parsing environment server melalui Zod.
+- `src/config/env-schema.ts` — schema environment yang dapat diuji tanpa boundary server-only.
 - `src/app/globals.css` — design tokens Tailwind CSS v4 (`--ease-zcorte`, `--color-cinematic-border`, status tokens).
 - `src/lib/constants.ts` — identitas brand `ZCorté` dan item navigasi terpusat.
 - `src/app/layout.tsx` — RootLayout dan metadata SEO/OpenGraph ZCorté.
@@ -164,6 +168,7 @@ Tidak ada API atau Server Action pada subtask ini.
 | `pnpm typecheck`    | `PASS` | Lulus.                                                                                                              |
 | Test relevan        | `PASS` | `prisma validate`, `prisma generate`, migration lokal, seed dua kali, verifikasi count, dan helper DB terkompilasi. |
 | `pnpm build`        | `PASS` | Lulus.                                                                                                              |
+| `pnpm test`         | `PASS` | 9 unit test untuk rate-limit, error contract, dan env schema.                                                       |
 
 ## 12. Keputusan dan Risiko Tersisa
 
